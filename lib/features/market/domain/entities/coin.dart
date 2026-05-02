@@ -4,7 +4,7 @@ part 'coin.freezed.dart';
 part 'coin.g.dart';
 
 @freezed
-class Coin with _$Coin {
+abstract class Coin with _$Coin {
   const Coin._();
   const factory Coin({
     required String symbol,

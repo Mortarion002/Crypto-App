@@ -4,7 +4,7 @@ part 'binance_ticker_dto.freezed.dart';
 part 'binance_ticker_dto.g.dart';
 
 @freezed
-class BinanceTickerDto with _$BinanceTickerDto {
+abstract class BinanceTickerDto with _$BinanceTickerDto {
   const BinanceTickerDto._();
   const factory BinanceTickerDto({
     required String symbol,

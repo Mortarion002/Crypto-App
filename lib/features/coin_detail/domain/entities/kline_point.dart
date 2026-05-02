@@ -4,7 +4,7 @@ part 'kline_point.freezed.dart';
 part 'kline_point.g.dart';
 
 @freezed
-class KlinePoint with _$KlinePoint {
+abstract class KlinePoint with _$KlinePoint {
   const KlinePoint._();
   const factory KlinePoint({
     required DateTime timestamp,

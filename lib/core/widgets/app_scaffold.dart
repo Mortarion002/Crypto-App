@@ -41,7 +41,7 @@ class AppScaffold extends StatelessWidget {
                 onTap: () => context.goNamed(RouteNames.home),
               ),
               _NavItem(
-                icon: LucideIcons.barChart,
+                icon: Icons.insights,
                 label: 'Insights',
                 isActive: currentPath == RoutePaths.insights,
                 onTap: () => context.goNamed(RouteNames.insights),
