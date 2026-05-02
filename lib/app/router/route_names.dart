@@ -1,4 +1,5 @@
 class RouteNames {
+  static const String onboarding = 'onboarding';
   static const String home = 'home';
   static const String insights = 'insights';
   static const String watchlist = 'watchlist';
@@ -7,6 +8,7 @@ class RouteNames {
 }
 
 class RoutePaths {
+  static const String onboarding = '/onboarding';
   static const String main = '/';
   static const String home = '/home';
   static const String insights = '/insights';

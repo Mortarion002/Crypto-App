@@ -1,24 +1,36 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
 import 'package:crypto_pulse/core/widgets/app_scaffold.dart';
 import 'package:crypto_pulse/features/market/presentation/screens/market_screen.dart';
 import 'package:crypto_pulse/features/insights/presentation/screens/insights_screen.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/screens/coin_detail_screen.dart';
 import 'package:crypto_pulse/features/watchlist/presentation/screens/watchlist_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/profile_screen.dart';
+import 'package:crypto_pulse/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final prefs = ref.read(sharedPreferencesProvider);
+  final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
+
   return GoRouter(
-    initialLocation: RoutePaths.home,
+    initialLocation: onboardingDone ? RoutePaths.home : RoutePaths.onboarding,
     routes: [
+      // ── Onboarding (outside shell, no nav bar) ─────────────────────
+      GoRoute(
+        path: RoutePaths.onboarding,
+        name: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // ── Main shell with bottom nav ─────────────────────────────────
       ShellRoute(
-        builder: (context, state, child) {
-          return AppScaffold(
-            currentPath: state.uri.path,
-            child: child,
-          );
-        },
+        builder: (context, state, child) => AppScaffold(
+          currentPath: state.uri.path,
+          child: child,
+        ),
         routes: [
           GoRoute(
             path: RoutePaths.home,
@@ -38,10 +50,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: RoutePaths.profile,
             name: RouteNames.profile,
-            builder: (context, state) => const PlaceholderScreen(title: 'Profile'),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
+
+      // ── Coin detail (outside shell, no nav bar) ────────────────────
       GoRoute(
         path: RoutePaths.coinDetail,
         name: RouteNames.coinDetail,
@@ -54,17 +68,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  
-  const PlaceholderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('Screen: $title')),
-    );
-  }
+// Helper: call this after completing onboarding to mark it done.
+Future<void> markOnboardingComplete() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('onboarding_complete', true);
 }
-

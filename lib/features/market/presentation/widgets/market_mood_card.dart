@@ -17,14 +17,14 @@ class MarketMoodCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isBullish 
-            ? [AppColors.mint.withOpacity(0.2), AppColors.canvasLevel1]
-            : [AppColors.vibrantCoral.withOpacity(0.2), AppColors.canvasLevel1],
+            ? [AppColors.mint.withValues(alpha: 0.2), AppColors.canvasLevel1]
+            : [AppColors.vibrantCoral.withValues(alpha: 0.2), AppColors.canvasLevel1],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: AppRadius.lgRadius,
         border: Border.all(
-          color: isBullish ? AppColors.mint.withOpacity(0.1) : AppColors.vibrantCoral.withOpacity(0.1),
+          color: isBullish ? AppColors.mint.withValues(alpha: 0.1) : AppColors.vibrantCoral.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
