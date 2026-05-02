@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/controllers/coin_detail_controller.dart';
+import 'package:crypto_pulse/features/watchlist/presentation/controllers/watchlist_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/widgets/coin_price_chart.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/widgets/chart_interval_selector.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
@@ -30,6 +31,8 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
 
     final params = CoinDetailParams(symbol: widget.symbol, interval: _selectedInterval);
     final klineState = ref.watch(coinDetailProvider(params));
+    
+    final isWatched = ref.watch(watchlistControllerProvider.select((list) => list.contains(widget.symbol)));
 
     if (coin == null) {
       return Scaffold(
@@ -52,9 +55,14 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
         title: Text('${coin.name} (${coin.symbol.replaceAll('USDT', '')})'),
         actions: [
           IconButton(
-            icon: const Icon(LucideIcons.star), // Can toggle to solid later
+            icon: Icon(
+              LucideIcons.star,
+              color: isWatched ? AppColors.cyanHighlight : null,
+              // Filled star not directly available in standard Lucide Icons without custom drawing, 
+              // so using color to indicate active state
+            ), 
             onPressed: () {
-              // Add to watchlist logic
+              ref.read(watchlistControllerProvider.notifier).toggleWatchlist(coin.symbol);
             },
           ),
         ],

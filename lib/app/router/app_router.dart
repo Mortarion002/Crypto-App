@@ -6,6 +6,7 @@ import 'package:crypto_pulse/core/widgets/app_scaffold.dart';
 import 'package:crypto_pulse/features/market/presentation/screens/market_screen.dart';
 import 'package:crypto_pulse/features/insights/presentation/screens/insights_screen.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/screens/coin_detail_screen.dart';
+import 'package:crypto_pulse/features/watchlist/presentation/screens/watchlist_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -32,7 +33,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: RoutePaths.watchlist,
             name: RouteNames.watchlist,
-            builder: (context, state) => const PlaceholderScreen(title: 'Watchlist'),
+            builder: (context, state) => const WatchlistScreen(),
           ),
           GoRoute(
             path: RoutePaths.profile,

@@ -9,6 +9,7 @@ import 'package:crypto_pulse/features/market/presentation/widgets/market_mood_ca
 import 'package:crypto_pulse/core/theme/app_spacing.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class MarketScreen extends ConsumerWidget {
   const MarketScreen({super.key});
@@ -78,7 +79,7 @@ class MarketScreen extends ConsumerWidget {
                                 pathParameters: {'symbol': coin.symbol},
                               );
                             },
-                          );
+                          ).animate().fadeIn(duration: 400.ms, delay: (index * 50).ms).slideX(begin: 0.1, end: 0);
                         },
                         childCount: coins.length + 1,
                       ),
