@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 
 class AppTypography {
-  static const String fontFamilyHeading = 'Epilogue';
-  static const String fontFamilyBody = 'Inter';
-
-  static const TextStyle displayXl = TextStyle(
-    fontFamily: fontFamilyHeading,
+  static TextStyle displayXl = GoogleFonts.epilogue(
     fontSize: 48,
     fontWeight: FontWeight.w800,
     height: 44 / 48,
@@ -14,8 +11,7 @@ class AppTypography {
     color: AppColors.onSurface,
   );
 
-  static const TextStyle headlineLg = TextStyle(
-    fontFamily: fontFamilyHeading,
+  static TextStyle headlineLg = GoogleFonts.epilogue(
     fontSize: 32,
     fontWeight: FontWeight.w700,
     height: 32 / 32,
@@ -23,8 +19,7 @@ class AppTypography {
     color: AppColors.onSurface,
   );
 
-  static const TextStyle headlineMd = TextStyle(
-    fontFamily: fontFamilyHeading,
+  static TextStyle headlineMd = GoogleFonts.epilogue(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     height: 24 / 24,
@@ -32,24 +27,21 @@ class AppTypography {
     color: AppColors.onSurface,
   );
 
-  static const TextStyle bodyLg = TextStyle(
-    fontFamily: fontFamilyBody,
+  static TextStyle bodyLg = GoogleFonts.inter(
     fontSize: 18,
     fontWeight: FontWeight.w500,
     height: 26 / 18,
     color: AppColors.onSurface,
   );
 
-  static const TextStyle bodyMd = TextStyle(
-    fontFamily: fontFamilyBody,
+  static TextStyle bodyMd = GoogleFonts.inter(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 22 / 16,
     color: AppColors.onSurface,
   );
 
-  static const TextStyle numberXl = TextStyle(
-    fontFamily: fontFamilyBody,
+  static TextStyle numberXl = GoogleFonts.inter(
     fontSize: 36,
     fontWeight: FontWeight.w600,
     height: 40 / 36,
@@ -57,8 +49,7 @@ class AppTypography {
     color: AppColors.onSurface,
   );
 
-  static const TextStyle labelCaps = TextStyle(
-    fontFamily: fontFamilyBody,
+  static TextStyle labelCaps = GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.w700,
     height: 16 / 12,
@@ -66,7 +57,7 @@ class AppTypography {
     color: AppColors.onSurface,
   );
   
-  static TextTheme get textTheme => const TextTheme(
+  static TextTheme get textTheme => TextTheme(
     displayLarge: displayXl,
     headlineLarge: headlineLg,
     headlineMedium: headlineMd,
