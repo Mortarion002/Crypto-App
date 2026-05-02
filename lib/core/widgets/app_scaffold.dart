@@ -25,7 +25,7 @@ class AppScaffold extends StatelessWidget {
             borderRadius: AppRadius.fullRadius,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -88,7 +88,7 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.cyanHighlight.withOpacity(0.1) : Colors.transparent,
+          color: isActive ? AppColors.cyanHighlight.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: AppRadius.fullRadius,
         ),
         child: Row(

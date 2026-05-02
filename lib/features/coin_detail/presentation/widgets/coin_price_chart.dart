@@ -57,7 +57,7 @@ class CoinPriceChart extends StatelessWidget {
             horizontalInterval: priceDiff == 0 ? 1 : priceDiff / 4,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: AppColors.surfaceBright.withOpacity(0.5),
+                color: AppColors.surfaceBright.withValues(alpha: 0.5),
                 strokeWidth: 1,
                 dashArray: [5, 5],
               );
@@ -92,9 +92,9 @@ class CoinPriceChart extends StatelessWidget {
               dotData: FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 gradient: LinearGradient(
-                  colors: [color.withOpacity(0.3), color.withOpacity(0.0)],
+                  colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0.0)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
