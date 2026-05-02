@@ -1,3 +1,6 @@
+# Local environment secrets — copy .env.example.json → .env.json and fill in your values
+.env.json
+
 # Miscellaneous
 *.class
 *.log

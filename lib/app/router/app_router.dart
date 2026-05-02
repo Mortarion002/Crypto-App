@@ -1,28 +1,69 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
+import 'package:crypto_pulse/app/router/router_refresh_notifier.dart';
 import 'package:crypto_pulse/core/widgets/app_scaffold.dart';
+import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 import 'package:crypto_pulse/features/market/presentation/screens/market_screen.dart';
 import 'package:crypto_pulse/features/insights/presentation/screens/insights_screen.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/screens/coin_detail_screen.dart';
 import 'package:crypto_pulse/features/watchlist/presentation/screens/watchlist_screen.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/profile_screen.dart';
 import 'package:crypto_pulse/features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
+import 'package:crypto_pulse/features/auth/presentation/screens/login_screen.dart';
+import 'package:crypto_pulse/features/auth/presentation/screens/signup_screen.dart';
+
+final _routerRefreshProvider = Provider<RouterRefreshNotifier>((ref) {
+  final notifier = RouterRefreshNotifier();
+  ref.onDispose(notifier.dispose);
+  return notifier;
+});
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final prefs = ref.read(sharedPreferencesProvider);
-  final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
+  final refresh = ref.watch(_routerRefreshProvider);
 
   return GoRouter(
-    initialLocation: onboardingDone ? RoutePaths.home : RoutePaths.onboarding,
+    refreshListenable: refresh,
+    redirect: (context, state) {
+      final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
+      final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
+
+      final loc = state.matchedLocation;
+      final isOnboarding = loc == RoutePaths.onboarding;
+      final isAuthRoute = loc == RoutePaths.login || loc == RoutePaths.signup;
+
+      if (!onboardingDone) {
+        return isOnboarding ? null : RoutePaths.onboarding;
+      }
+      if (!isLoggedIn) {
+        return isAuthRoute ? null : RoutePaths.login;
+      }
+      if (isLoggedIn && (isAuthRoute || isOnboarding)) {
+        return RoutePaths.home;
+      }
+      return null;
+    },
+    initialLocation: RoutePaths.home,
     routes: [
-      // ── Onboarding (outside shell, no nav bar) ─────────────────────
+      // ── Onboarding ─────────────────────────────────────────────────
       GoRoute(
         path: RoutePaths.onboarding,
         name: RouteNames.onboarding,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // ── Auth ───────────────────────────────────────────────────────
+      GoRoute(
+        path: RoutePaths.login,
+        name: RouteNames.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.signup,
+        name: RouteNames.signup,
+        builder: (context, state) => const SignupScreen(),
       ),
 
       // ── Main shell with bottom nav ─────────────────────────────────
@@ -55,7 +96,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // ── Coin detail (outside shell, no nav bar) ────────────────────
+      // ── Coin detail (outside shell) ────────────────────────────────
       GoRoute(
         path: RoutePaths.coinDetail,
         name: RouteNames.coinDetail,
@@ -67,9 +108,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-// Helper: call this after completing onboarding to mark it done.
-Future<void> markOnboardingComplete() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('onboarding_complete', true);
-}

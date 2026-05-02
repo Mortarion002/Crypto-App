@@ -6,6 +6,7 @@ import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 import 'package:crypto_pulse/core/theme/app_spacing.dart';
 import 'package:crypto_pulse/core/theme/app_radius.dart';
+import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -28,6 +29,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authAsync = ref.watch(authControllerProvider);
+    final user = authAsync.asData?.value;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -62,13 +66,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(LucideIcons.search, size: 20),
-                      color: AppColors.onSurfaceVariant,
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
+                    const SizedBox(width: 36),
                   ],
                 ),
               ),
@@ -86,8 +84,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       color: AppColors.surfaceContainerHigh,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(LucideIcons.user,
-                        size: 52, color: AppColors.onSurfaceVariant),
+                    child: Center(
+                      child: user != null
+                          ? Text(
+                              user.displayName.substring(0, 1).toUpperCase(),
+                              style: const TextStyle(
+                                color: AppColors.onSurface,
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            )
+                          : const Icon(LucideIcons.user,
+                              size: 52, color: AppColors.onSurfaceVariant),
+                    ),
                   ),
                   Container(
                     width: 120,
@@ -108,15 +117,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               // ── Name ───────────────────────────────────────────────
               Text(
-                'Aman',
+                user?.displayName.toUpperCase() ?? '—',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
               ),
 
+              if (user != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  user.email,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                ),
+              ],
+
               const SizedBox(height: 10),
 
-              // ── Backend badge ──────────────────────────────────────
+              // ── Status badge ───────────────────────────────────────
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -130,16 +149,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.mint,
+                      decoration: BoxDecoration(
+                        color: user != null
+                            ? AppColors.mint
+                            : AppColors.onSurfaceVariant,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'SUPABASE CONNECTED',
+                      user != null ? 'SUPABASE CONNECTED' : 'NOT SIGNED IN',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.mint,
+                            color: user != null
+                                ? AppColors.mint
+                                : AppColors.onSurfaceVariant,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
                           ),
@@ -196,19 +219,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                     const SizedBox(height: 24),
 
-                    _ActionRow(
-                      icon: LucideIcons.userPlus,
-                      label: 'Sign In to Another Account',
-                      color: AppColors.onSurface,
-                    ),
+                    if (user == null) ...[
+                      _ActionRow(
+                        icon: LucideIcons.logIn,
+                        label: 'Sign In',
+                        color: AppColors.cyanHighlight,
+                        onTap: () {},
+                      ),
+                      const SizedBox(height: 10),
+                    ],
 
-                    const SizedBox(height: 10),
-
-                    _ActionRow(
-                      icon: LucideIcons.logOut,
-                      label: 'Sign Out',
-                      color: AppColors.vibrantCoral,
-                    ),
+                    if (user != null) ...[
+                      _ActionRow(
+                        icon: LucideIcons.logOut,
+                        label: 'Sign Out',
+                        color: AppColors.vibrantCoral,
+                        onTap: () async {
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .signOut();
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                    ],
 
                     const SizedBox(height: 48),
 
@@ -329,33 +362,38 @@ class _ActionRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback onTap;
 
   const _ActionRow({
     required this.icon,
     required this.label,
     required this.color,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppColors.canvasLevel1,
-        borderRadius: AppRadius.mdRadius,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 12),
-          Text(
-            label,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(color: color, fontWeight: FontWeight.w600),
-          ),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColors.canvasLevel1,
+          borderRadius: AppRadius.mdRadius,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(color: color, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
     );
   }
