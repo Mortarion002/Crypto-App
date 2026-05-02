@@ -228,8 +228,8 @@ return $default(_that.symbol,_that.priceChange,_that.priceChangePercent,_that.we
 /// @nodoc
 @JsonSerializable()
 
-class _BinanceTickerDto implements BinanceTickerDto {
-  const _BinanceTickerDto({required this.symbol, required this.priceChange, required this.priceChangePercent, required this.weightedAvgPrice, required this.prevClosePrice, required this.lastPrice, required this.lastQty, required this.bidPrice, required this.bidQty, required this.askPrice, required this.askQty, required this.openPrice, required this.highPrice, required this.lowPrice, required this.volume, required this.quoteVolume, required this.openTime, required this.closeTime, required this.firstId, required this.lastId, required this.count});
+class _BinanceTickerDto extends BinanceTickerDto {
+  const _BinanceTickerDto({required this.symbol, required this.priceChange, required this.priceChangePercent, required this.weightedAvgPrice, required this.prevClosePrice, required this.lastPrice, required this.lastQty, required this.bidPrice, required this.bidQty, required this.askPrice, required this.askQty, required this.openPrice, required this.highPrice, required this.lowPrice, required this.volume, required this.quoteVolume, required this.openTime, required this.closeTime, required this.firstId, required this.lastId, required this.count}): super._();
   factory _BinanceTickerDto.fromJson(Map<String, dynamic> json) => _$BinanceTickerDtoFromJson(json);
 
 @override final  String symbol;

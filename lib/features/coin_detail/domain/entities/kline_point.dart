@@ -5,6 +5,7 @@ part 'kline_point.g.dart';
 
 @freezed
 class KlinePoint with _$KlinePoint {
+  const KlinePoint._();
   const factory KlinePoint({
     required DateTime timestamp,
     required double open,

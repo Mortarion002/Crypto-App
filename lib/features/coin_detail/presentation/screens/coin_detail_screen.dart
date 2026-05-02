@@ -29,7 +29,7 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
     final coin = marketState.value?.firstWhere((c) => c.symbol == widget.symbol);
 
     final params = CoinDetailParams(symbol: widget.symbol, interval: _selectedInterval);
-    final klineState = ref.watch(coinDetailControllerProvider(params));
+    final klineState = ref.watch(coinDetailProvider(params));
 
     if (coin == null) {
       return Scaffold(
@@ -47,13 +47,13 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
-          onTap: () => context.pop(),
+          onPressed: () => context.pop(),
         ),
         title: Text('${coin.name} (${coin.symbol.replaceAll('USDT', '')})'),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.star), // Can toggle to solid later
-            onTap: () {
+            onPressed: () {
               // Add to watchlist logic
             },
           ),

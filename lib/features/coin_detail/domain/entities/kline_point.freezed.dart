@@ -213,8 +213,8 @@ return $default(_that.timestamp,_that.open,_that.high,_that.low,_that.close,_tha
 /// @nodoc
 @JsonSerializable()
 
-class _KlinePoint implements KlinePoint {
-  const _KlinePoint({required this.timestamp, required this.open, required this.high, required this.low, required this.close, required this.volume});
+class _KlinePoint extends KlinePoint {
+  const _KlinePoint({required this.timestamp, required this.open, required this.high, required this.low, required this.close, required this.volume}): super._();
   factory _KlinePoint.fromJson(Map<String, dynamic> json) => _$KlinePointFromJson(json);
 
 @override final  DateTime timestamp;

@@ -216,8 +216,8 @@ return $default(_that.symbol,_that.name,_that.currentPrice,_that.priceChangePerc
 /// @nodoc
 @JsonSerializable()
 
-class _Coin implements Coin {
-  const _Coin({required this.symbol, required this.name, required this.currentPrice, required this.priceChangePercent24h, required this.priceChange24h, required this.volume24h, required this.high24h, required this.low24h, required this.isUp});
+class _Coin extends Coin {
+  const _Coin({required this.symbol, required this.name, required this.currentPrice, required this.priceChangePercent24h, required this.priceChange24h, required this.volume24h, required this.high24h, required this.low24h, required this.isUp}): super._();
   factory _Coin.fromJson(Map<String, dynamic> json) => _$CoinFromJson(json);
 
 @override final  String symbol;
