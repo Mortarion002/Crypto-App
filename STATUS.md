@@ -10,11 +10,12 @@ Crypto Pulse is a Flutter mobile crypto sentiment dashboard using Binance public
 
 Validation on 2026-05-04:
 - Latest quick validation: `dart analyze` has no issues after the Settings/Profile and Insights fixes.
+- Latest auth validation: signup controller tests pass after the signup feedback fix.
 - Earlier full validation: `flutter test` passes 66 tests.
 - Earlier build validation: `flutter build apk --debug --dart-define-from-file=.env.json` succeeds.
 - Full test/build were not rerun for the latest UI batch, per request to avoid unnecessary tests.
 - Git remote: `origin` -> `https://github.com/Mortarion002/Crypto-App.git`.
-- Latest implementation push: `60dccbd fix: split settings tab from profile`.
+- Recent pushes include the Settings/Profile split, project status refresh, and signup feedback/logging fix.
 
 ---
 
@@ -48,6 +49,12 @@ Validation on 2026-05-04:
 - [x] Updated route-name tests to include Settings route constants.
 - [x] Ran `dart analyze` after the latest code changes; no issues found.
 - [x] Pushed the latest implementation batch to GitHub.
+
+### Auth Feedback And Logging
+- [x] Fixed signup UX when Supabase creates a user without an active session, such as email confirmation flows.
+- [x] Added a success state on signup so users know to confirm email and then sign in.
+- [x] Preserved friendly signup error messages for duplicate accounts, invalid emails, and short passwords.
+- [x] Reduced Binance Dio logging noise by hiding full response bodies in debug logs.
 
 ---
 

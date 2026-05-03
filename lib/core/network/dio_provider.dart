@@ -9,9 +9,7 @@ final dioProvider = Provider<Dio>((ref) {
       baseUrl: ApiEndpoints.binanceBaseUrl,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers: {'Accept': 'application/json'},
     ),
   );
 
@@ -19,7 +17,7 @@ final dioProvider = Provider<Dio>((ref) {
     PrettyDioLogger(
       requestHeader: true,
       requestBody: true,
-      responseBody: true,
+      responseBody: false,
       responseHeader: false,
       error: true,
       compact: true,

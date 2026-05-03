@@ -9,18 +9,26 @@ class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
   @override
-  Stream<AppUser?> get authStateChanges =>
-      _client.auth.onAuthStateChange.map((event) => _fromUser(event.session?.user));
+  Stream<AppUser?> get authStateChanges => _client.auth.onAuthStateChange.map(
+    (event) => _fromUser(event.session?.user),
+  );
 
   @override
   AppUser? get currentUser => _fromUser(_client.auth.currentUser);
 
   @override
-  Future<void> signUp({required String email, required String password, String? name}) async {
-    await _client.auth.signUp(
+  Future<SignUpResult> signUp({
+    required String email,
+    required String password,
+    String? name,
+  }) async {
+    final response = await _client.auth.signUp(
       email: email,
       password: password,
       data: name != null && name.isNotEmpty ? {'name': name} : null,
+    );
+    return SignUpResult(
+      signedIn: response.session != null || _client.auth.currentSession != null,
     );
   }
 

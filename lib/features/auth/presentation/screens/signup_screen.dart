@@ -23,6 +23,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscure = true;
   bool _loading = false;
   String? _error;
+  String? _success;
 
   @override
   void dispose() {
@@ -55,12 +56,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() {
       _loading = true;
       _error = null;
+      _success = null;
     });
 
-    final err = await ref
+    final result = await ref
         .read(authControllerProvider.notifier)
         .signUp(email, password, name.isNotEmpty ? name : null);
-    if (mounted) setState(() { _loading = false; _error = err; });
+    if (mounted) {
+      setState(() {
+        _loading = false;
+        _error = result.error;
+        _success = result.message;
+      });
+    }
   }
 
   @override
@@ -69,7 +77,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.containerPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.containerPadding,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,8 +95,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     color: AppColors.canvasLevel1,
                     borderRadius: AppRadius.smRadius,
                   ),
-                  child: const Icon(LucideIcons.arrowLeft,
-                      size: 18, color: AppColors.onSurfaceVariant),
+                  child: const Icon(
+                    LucideIcons.arrowLeft,
+                    size: 18,
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ),
 
@@ -95,10 +108,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               Text(
                 'CREATE\nACCOUNT',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                      height: 1.1,
-                    ),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
+                  height: 1.1,
+                ),
               ),
 
               const SizedBox(height: 8),
@@ -106,8 +119,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               Text(
                 'Start tracking the market',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
 
               const SizedBox(height: 36),
@@ -166,24 +179,65 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               // ── Error ──────────────────────────────────────────────────
               if (_error != null) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.vibrantCoral.withValues(alpha: 0.12),
                     borderRadius: AppRadius.smRadius,
                     border: Border.all(
-                        color: AppColors.vibrantCoral.withValues(alpha: 0.4), width: 1),
+                      color: AppColors.vibrantCoral.withValues(alpha: 0.4),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(LucideIcons.circleAlert,
-                          size: 15, color: AppColors.vibrantCoral),
+                      const Icon(
+                        LucideIcons.circleAlert,
+                        size: 15,
+                        color: AppColors.vibrantCoral,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _error!,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: AppColors.vibrantCoral,
-                              ),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(color: AppColors.vibrantCoral),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (_success != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.mint.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.smRadius,
+                    border: Border.all(
+                      color: AppColors.mint.withValues(alpha: 0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.circleCheck,
+                        size: 15,
+                        color: AppColors.mint,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _success!,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(color: AppColors.mint),
                         ),
                       ),
                     ],
@@ -219,7 +273,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           )
                         : Text(
                             'CREATE ACCOUNT',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1.5,
@@ -238,8 +293,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: RichText(
                     text: TextSpan(
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                          ),
+                        color: AppColors.onSurfaceVariant,
+                      ),
                       children: [
                         const TextSpan(text: 'Already have an account? '),
                         TextSpan(
@@ -273,10 +328,10 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-          ),
+        color: AppColors.onSurfaceVariant,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.8,
+      ),
     );
   }
 }
@@ -304,7 +359,10 @@ class _InputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.canvasLevel1,
         borderRadius: AppRadius.mdRadius,
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5), width: 1),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -316,7 +374,10 @@ class _InputField extends StatelessWidget {
           hintText: hint,
           hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           suffixIcon: suffix,
         ),
       ),

@@ -18,9 +18,9 @@ class FakeAuthRepository implements AuthRepository {
     AppUser? initialUser,
     String? signInError,
     String? signUpError,
-  })  : _currentUser = initialUser,
-        _signInError = signInError,
-        _signUpError = signUpError;
+  }) : _currentUser = initialUser,
+       _signInError = signInError,
+       _signUpError = signUpError;
 
   @override
   Stream<AppUser?> get authStateChanges => _streamCtrl.stream;
@@ -36,11 +36,15 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signUp(
-      {required String email, required String password, String? name}) async {
+  Future<SignUpResult> signUp({
+    required String email,
+    required String password,
+    String? name,
+  }) async {
     if (_signUpError != null) throw Exception(_signUpError);
     _currentUser = AppUser(id: 'test-id', email: email, name: name);
     _streamCtrl.add(_currentUser);
+    return const SignUpResult(signedIn: true);
   }
 
   @override
@@ -96,8 +100,7 @@ void main() {
     });
 
     test('maps "Invalid login credentials" to friendly message', () async {
-      final repo =
-          FakeAuthRepository(signInError: 'Invalid login credentials');
+      final repo = FakeAuthRepository(signInError: 'Invalid login credentials');
       final container = _makeContainer(repo);
       addTearDown(container.dispose);
 
@@ -110,8 +113,9 @@ void main() {
     });
 
     test('maps "Unable to validate email" to friendly message', () async {
-      final repo =
-          FakeAuthRepository(signInError: 'Unable to validate email address');
+      final repo = FakeAuthRepository(
+        signInError: 'Unable to validate email address',
+      );
       final container = _makeContainer(repo);
       addTearDown(container.dispose);
 
@@ -124,8 +128,9 @@ void main() {
     });
 
     test('returns generic message for unknown errors', () async {
-      final repo =
-          FakeAuthRepository(signInError: 'Some unexpected server meltdown');
+      final repo = FakeAuthRepository(
+        signInError: 'Some unexpected server meltdown',
+      );
       final container = _makeContainer(repo);
       addTearDown(container.dispose);
 
@@ -139,44 +144,45 @@ void main() {
   });
 
   group('AuthController.signUp', () {
-    test('returns null on success', () async {
+    test('returns success on success', () async {
       final container = _makeContainer(FakeAuthRepository());
       addTearDown(container.dispose);
 
       await container.read(authControllerProvider.future);
-      final error = await container
+      final result = await container
           .read(authControllerProvider.notifier)
           .signUp('new@user.com', 'pass123', 'New User');
 
-      expect(error, isNull);
+      expect(result.isSuccess, isTrue);
+      expect(result.error, isNull);
     });
 
     test('maps "User already registered" to friendly message', () async {
-      final repo =
-          FakeAuthRepository(signUpError: 'User already registered');
+      final repo = FakeAuthRepository(signUpError: 'User already registered');
       final container = _makeContainer(repo);
       addTearDown(container.dispose);
 
       await container.read(authControllerProvider.future);
-      final error = await container
+      final result = await container
           .read(authControllerProvider.notifier)
           .signUp('existing@test.com', 'pass123', null);
 
-      expect(error, 'An account with this email already exists.');
+      expect(result.error, 'An account with this email already exists.');
     });
 
     test('maps "Password should be at least" to friendly message', () async {
       final repo = FakeAuthRepository(
-          signUpError: 'Password should be at least 6 characters');
+        signUpError: 'Password should be at least 6 characters',
+      );
       final container = _makeContainer(repo);
       addTearDown(container.dispose);
 
       await container.read(authControllerProvider.future);
-      final error = await container
+      final result = await container
           .read(authControllerProvider.notifier)
           .signUp('user@test.com', 'abc', null);
 
-      expect(error, 'Password must be at least 6 characters.');
+      expect(result.error, 'Password must be at least 6 characters.');
     });
 
     test('passes optional name correctly to repository', () async {
@@ -198,11 +204,12 @@ void main() {
       addTearDown(container.dispose);
 
       await container.read(authControllerProvider.future);
-      final error = await container
+      final result = await container
           .read(authControllerProvider.notifier)
           .signUp('user@test.com', 'pass123', null);
 
-      expect(error, isNull);
+      expect(result.isSuccess, isTrue);
+      expect(result.error, isNull);
       expect(repo.currentUser?.name, isNull);
     });
   });
@@ -219,8 +226,7 @@ void main() {
       await container.read(authControllerProvider.notifier).signOut();
       await Future<void>.delayed(Duration.zero); // let stream tick
 
-      final after =
-          container.read(authControllerProvider).asData?.value;
+      final after = container.read(authControllerProvider).asData?.value;
       expect(after, isNull);
     });
   });
