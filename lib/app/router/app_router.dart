@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
 import 'package:crypto_pulse/app/router/router_refresh_notifier.dart';
 import 'package:crypto_pulse/core/widgets/app_scaffold.dart';
-import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 import 'package:crypto_pulse/features/market/presentation/screens/market_screen.dart';
 import 'package:crypto_pulse/features/insights/presentation/screens/insights_screen.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/screens/coin_detail_screen.dart';
@@ -21,28 +20,23 @@ final _routerRefreshProvider = Provider<RouterRefreshNotifier>((ref) {
 });
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final prefs = ref.read(sharedPreferencesProvider);
   final refresh = ref.watch(_routerRefreshProvider);
 
   return GoRouter(
     refreshListenable: refresh,
     redirect: (context, state) {
-      final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
       final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
 
       final loc = state.matchedLocation;
       final isOnboarding = loc == RoutePaths.onboarding;
       final isAuthRoute = loc == RoutePaths.login || loc == RoutePaths.signup;
 
-      if (!onboardingDone) {
-        return isOnboarding ? null : RoutePaths.onboarding;
-      }
       if (!isLoggedIn) {
-        return isAuthRoute ? null : RoutePaths.login;
+        // Allow onboarding and auth routes; send everything else to onboarding
+        return (isOnboarding || isAuthRoute) ? null : RoutePaths.onboarding;
       }
-      if (isLoggedIn && (isAuthRoute || isOnboarding)) {
-        return RoutePaths.home;
-      }
+      // Logged in — bounce away from onboarding/auth back to home
+      if (isOnboarding || isAuthRoute) return RoutePaths.home;
       return null;
     },
     initialLocation: RoutePaths.home,

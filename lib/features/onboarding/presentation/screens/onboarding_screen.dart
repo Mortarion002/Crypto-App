@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 
@@ -20,10 +19,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _pageCount = 4;
 
-  Future<void> _finish() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('onboarding_complete', true);
-    if (mounted) context.goNamed(RouteNames.home);
+  void _finish() {
+    context.goNamed(RouteNames.login);
   }
 
   void _next() {
