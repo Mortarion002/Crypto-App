@@ -9,10 +9,45 @@ Last updated: 2026-05-04
 Crypto Pulse is a Flutter mobile crypto sentiment dashboard using Binance public market APIs, Supabase auth/database, Riverpod state management, GoRouter navigation, SharedPreferences local storage, and the "Vivid Intelligence" dark editorial design system from the Stitch references.
 
 Validation on 2026-05-04:
-- `flutter test` passes: 66 tests.
-- `dart analyze` has no issues.
-- `flutter build apk --debug --dart-define-from-file=.env.json` succeeds.
+- Latest quick validation: `dart analyze` has no issues after the Settings/Profile and Insights fixes.
+- Earlier full validation: `flutter test` passes 66 tests.
+- Earlier build validation: `flutter build apk --debug --dart-define-from-file=.env.json` succeeds.
+- Full test/build were not rerun for the latest UI batch, per request to avoid unnecessary tests.
 - Git remote: `origin` -> `https://github.com/Mortarion002/Crypto-App.git`.
+- Latest implementation push: `60dccbd fix: split settings tab from profile`.
+
+---
+
+## Latest Completed Work
+
+### Navigation And Screens
+- [x] Replaced the last bottom navigation item from Profile to Settings.
+- [x] Added `/settings` and `RouteNames.settings`.
+- [x] Added `SettingsScreen` as the fourth shell tab.
+- [x] Moved `ProfileScreen` outside the bottom navigation shell.
+- [x] Added a Profile row/button inside Settings that opens the Profile screen.
+- [x] Simplified Profile into an account-details screen instead of mixing it with settings.
+
+### Insights Fixes
+- [x] Fixed the Insights AI Protocol card overflow shown on narrow mobile screens.
+- [x] Changed the AI Protocol action buttons from a fixed horizontal row to a wrapping layout.
+
+### Settings Behavior
+- [x] Kept the dark theme row visible but locked, because only dark theme exists right now.
+- [x] Kept the live refresh toggle wired to `SharedPreferences`.
+- [x] Kept live refresh changes invalidating `MarketController`.
+- [x] Kept Settings sign in/sign out actions wired to auth routes/controller.
+
+### Native Launch And Icon Polish
+- [x] Added launcher icon generation.
+- [x] Replaced the default black/white native splash behavior.
+- [x] Configured native launch surfaces to show the app icon on the app-colored launch screen.
+
+### Documentation And Validation
+- [x] Updated README navigation/features to mention Settings plus separate Profile.
+- [x] Updated route-name tests to include Settings route constants.
+- [x] Ran `dart analyze` after the latest code changes; no issues found.
+- [x] Pushed the latest implementation batch to GitHub.
 
 ---
 
@@ -97,8 +132,8 @@ Validation on 2026-05-04:
 - [ ] Add visual QA pass on a device/emulator or browser target.
 
 ### Phase 6 - Publish Rhythm
-- [ ] Commit and push each stable phase to GitHub.
-- [ ] Re-run tests/analyze before each push when code changes are involved.
+- [x] Commit and push each stable phase to GitHub.
+- [x] Re-run targeted validation before code pushes.
 
 ---
 
