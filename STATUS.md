@@ -1,89 +1,111 @@
-# Crypto Pulse Flutter — Project Status
+# Crypto Pulse Flutter - Project Status
 
-Last updated: 2026-05-02
+Last updated: 2026-05-04
+
+---
+
+## Current Snapshot
+
+Crypto Pulse is a Flutter mobile crypto sentiment dashboard using Binance public market APIs, Supabase auth/database, Riverpod state management, GoRouter navigation, SharedPreferences local storage, and the "Vivid Intelligence" dark editorial design system from the Stitch references.
+
+Validation on 2026-05-04:
+- `flutter test` passes: 65 tests.
+- `dart analyze` has 4 info-level style notes only, all for unnecessary multiple underscore callback names.
+- Git remote: `origin` -> `https://github.com/Mortarion002/Crypto-App.git`.
 
 ---
 
 ## What Is Done
 
 ### Infrastructure
-- [x] Flutter project created with full dependency set (go_router, riverpod, dio, fl_chart, shimmer, flutter_animate, freezed, hive, etc.)
-- [x] Feature-first folder architecture in place
-- [x] App theme system: `AppColors`, `AppTypography`, `AppSpacing`, `AppRadius` — all matching DESIGN.md
-- [x] GoRouter configured with named routes for all main screens
-- [x] `AppScaffold` with floating pill-style bottom nav (cyan active indicator)
-- [x] Riverpod `ProviderScope` wired in `main.dart`
-- [x] SharedPreferences provider with override at startup
+- [x] Flutter project with go_router, flutter_riverpod, dio, fl_chart, shimmer, flutter_animate, freezed, supabase_flutter, shared_preferences, lucide icons, and related tooling.
+- [x] Feature-first folder architecture under `features/`, `core/`, and `app/`.
+- [x] App theme system: `AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, and dark `ThemeData`.
+- [x] GoRouter with onboarding, auth, shell tabs, coin detail, auth redirect guard, and `RouterRefreshNotifier`.
+- [x] Floating pill-style bottom navigation in `AppScaffold`.
+- [x] Riverpod `ProviderScope` and SharedPreferences override wired in `main.dart`.
+- [x] Secret loading via `--dart-define-from-file=.env.json`.
+- [x] `.env.example.json` committed; `.env.json` gitignored.
+- [x] Supabase migration for `profiles`, `watchlist_items`, RLS policies, and signup trigger.
 
-### API Layer (fully wired)
-- [x] Binance public REST API — `GET /ticker/24hr` for all 6 tracked coins
-- [x] Binance public REST API — `GET /klines` for coin detail charts (1h, 4h, 1d, 1w intervals)
-- [x] Dio HTTP client with 15s timeout and pretty logger
-- [x] `BinanceMarketRemoteDataSource` — fetches tickers
-- [x] `BinanceCoinRemoteDataSource` — fetches klines with configurable `limit`
-- [x] DTOs: `BinanceTickerDto` (freezed), `BinanceKlineDto`
-
-### Domain Models
-- [x] `Coin` entity (freezed) — symbol, name, price, priceChange%, volume, high, low, isUp
-- [x] `KlinePoint` entity (freezed) — timestamp, open, high, low, close, volume
-- [x] `MarketInsights` — topGainers, topLosers, marketHeadline, volatilityIndex
-- [x] `WatchlistItem` — stored as `List<String>` (symbols) in SharedPreferences
+### Data And Domain
+- [x] Binance 24h ticker endpoint for market data.
+- [x] Binance klines endpoint for coin detail charts and watchlist sparklines.
+- [x] Dio client with timeout and pretty logger.
+- [x] `Coin`, `KlinePoint`, `AppUser`, and `MarketInsights` models/entities.
+- [x] Repository boundaries for auth, market, and coin detail.
 
 ### State Management
-- [x] `MarketController` — AsyncNotifier, auto-refreshes every 30s
-- [x] `CoinDetailProvider` — FutureProvider.family by symbol + interval
-- [x] `WatchlistController` — Notifier, persists to SharedPreferences
-- [x] `InsightsController` — derives insights from market data (top gainers/losers, volatility, headline)
+- [x] `MarketController` auto-refreshes every 30 seconds.
+- [x] `coinDetailProvider` loads chart klines by symbol and interval.
+- [x] `coinSparklineProvider` loads per-symbol sparkline data.
+- [x] `WatchlistController` persists local watchlist and syncs with Supabase when signed in.
+- [x] `InsightsController` derives mood, volatility, top gainers/losers, headline, and insight text from market data.
+- [x] `AuthController` wraps Supabase auth and maps common auth errors to friendly messages.
 
-### Screens (connected to real data)
-- [x] **MarketScreen** — coin list, mood card, pull-to-refresh, loading skeletons, stagger animations
-- [x] **CoinDetailScreen** — price, chart, interval selector, stats, watchlist toggle
-- [x] **InsightsScreen** — mood card, top movers list
-- [x] **WatchlistScreen** — persisted list, swipe-to-delete, empty state
+### Screens
+- [x] Onboarding: 4-page PageView matching the refined visual direction.
+- [x] Login and signup: Supabase email/password auth with inline errors.
+- [x] Market: personalized-style header, market selector, high-volatility alert, Market Pulse card with BTC chart, top movers, colored coin accent bars.
+- [x] Coin Detail: interval selector, price card with chart background, sentiment strength bar, 2x2 stats grid, pinned watchlist CTA.
+- [x] Insights: large editorial heading, Market Mood card with LIVE badge, circular volatility gauge, AI Protocol card, gainers/losers lists.
+- [x] Watchlist: search bar, live saved coins, sparklines, sentiment labels, empty/end states.
+- [x] Profile: user identity, Supabase status badge, settings toggles persisted to SharedPreferences, sign out.
+
+### Tests
+- [x] `test/features/auth/domain/app_user_test.dart`
+- [x] `test/features/market/domain/coin_test.dart`
+- [x] `test/features/auth/presentation/auth_controller_test.dart`
+- [x] `test/features/insights/insights_controller_test.dart`
+- [x] `test/features/watchlist/watchlist_controller_test.dart`
+- [x] `test/app/router/route_names_test.dart`
+- [x] `test/core/config/env_test.dart`
 
 ---
 
-## What Needs Work / Is Missing
+## Phased Execution Plan
 
-### Screens — Design Gaps (screens exist but don't match design images)
+### Phase 1 - Status And Roadmap Hygiene
+- [x] Replace stale status notes with current implementation reality.
+- [x] Record validation state and remaining risks.
+- [ ] Keep this file updated after each implementation batch.
 
-| Screen | Status | What's Missing |
-|---|---|---|
-| Home (Market) | Partial | No personalized header (avatar, "CRYPTO PULSE", icons); no greeting "Hi, Aman!"; no market alert card; Market Pulse card is basic; coin tiles have no colored left border |
-| Coin Detail | Partial | Interval selector is below chart, not above; no card-style price display with sparkline background; no market sentiment progress bar; stats are rows not a 2×2 grid; no big "ADD TO WATCHLIST" button at bottom |
-| Insights | Partial | No "INSIGHTS" large heading; no Market Mood card with LIVE badge; no circular volatility gauge; no AI Protocol card; top movers are plain CoinCards |
-| Watchlist | Partial | No "WATCHLIST" header; no search bar; no sparkline in tiles; no sentiment badge on tiles; empty state is a plain text widget |
-| Profile | Missing | Screen is a `PlaceholderScreen` — avatar, name, settings toggles, sign out not built |
+### Phase 2 - Wire Existing UI Actions
+- [ ] Replace hardcoded `Hi, Aman!` with the signed-in user's display name.
+- [ ] Route profile's signed-out Sign In action to login.
+- [ ] Wire search icons to useful behavior or remove inactive affordances.
+- [ ] Ensure labels do not claim unavailable behavior.
 
-### Screens — Not Created At All
+### Phase 3 - Settings Behavior
+- [ ] Make Profile's live refresh toggle affect market auto-refresh.
+- [ ] Keep dark theme toggle persisted, but avoid pretending a light theme exists until implemented.
+- [ ] Add focused tests for settings-related behavior.
 
-| Screen | Status |
-|---|---|
-| Onboarding Screen 1 — "Read The Market Before It Moves" | Missing |
-| Onboarding Screen 2 — "Live Prices. Clear Signals." | Missing |
-| Onboarding Screen 3 — "Follow The Coins That Matter" | Missing |
-| Onboarding Screen 4 — "Turn Noise Into Insight" | Missing |
-| Auth / Login Screen | Missing |
-| Auth / Signup Screen | Missing |
+### Phase 4 - Resilience And Data Safety
+- [ ] Harden Coin Detail when market data is empty or the requested symbol is absent.
+- [ ] Improve watchlist cloud sync failure handling enough that failures are visible in debug logs and do not silently corrupt local state.
+- [ ] Avoid duplicate background requests where possible.
 
-### Features — Not Implemented
+### Phase 5 - App Polish
+- [ ] Fix remaining analyzer info notes.
+- [ ] Wire app icon assets and launcher icon generation.
+- [ ] Add visual QA pass on a device/emulator or browser target.
 
-- [ ] Onboarding flow (check `onboarding_complete` flag → redirect to onboarding if new user)
-- [ ] Sparklines in watchlist tiles (need sparkline provider fetching 20-point klines per coin)
-- [ ] Circular volatility gauge widget (custom painter or fl_chart radial)
-- [ ] Market Pulse mini-chart in home screen (BTC klines as background)
-- [ ] Coin accent colors per symbol (BTC=coral, ETH=purple, SOL=cyan, BNB=yellow)
-- [ ] Sentiment strength progress bar in coin detail
-- [ ] Market Mood LIVE badge animation
-- [ ] Search bar functionality in watchlist
-- [ ] Auth (Supabase or Firebase) — not connected at all
-- [ ] Cloud watchlist sync — currently local only (SharedPreferences)
-- [ ] Profile settings persistence (theme toggle, refresh toggle)
+### Phase 6 - Publish Rhythm
+- [ ] Commit and push each stable phase to GitHub.
+- [ ] Re-run tests/analyze before each push when code changes are involved.
 
-### Router
-- [ ] Onboarding route (`/onboarding`) not defined
-- [ ] Profile screen is a placeholder `PlaceholderScreen`, not a real screen
-- [ ] No onboarding redirect on first launch
+---
+
+## Known Remaining Issues
+
+- Home greeting is currently hardcoded in code and should use `authControllerProvider`.
+- Some search/bell icon buttons are placeholders.
+- Profile live refresh setting is persisted but not yet connected to `MarketController`.
+- Profile dark mode setting is persisted, but the app only ships a dark theme right now.
+- Watchlist cloud sync intentionally favors local-first UX, but remote write failures are swallowed.
+- Coin Detail needs a better empty/error state when market data is unavailable.
+- App icon is not wired up.
 
 ---
 
@@ -100,18 +122,46 @@ Last updated: 2026-05-02
 
 ---
 
-## Sentiment Logic (implemented)
+## Sentiment And Volatility Logic
 
-```
-Per coin: >2% = Bullish | <-2% = Bearish | else = Neutral
-Market mood: gainers > losers*2 = Bullish | losers > gainers*2 = Bearish | else = Neutral
-Volatility: avg |priceChange| < 2% = Low | 2-5% = Moderate | >5% = High
-Volatility index: avg |priceChange| * 10 (display scale 0–100)
+```text
+Per coin:    > +2% = Bullish | < -2% = Bearish | otherwise Neutral
+Market mood: gainers > losers * 2 = BULLISH | losers > gainers * 2 = BEARISH | otherwise NEUTRAL
+Volatility:  avg absolute 24h change < 2% = Low | 2-5% = Moderate | > 5% = High
+Index:       avg absolute 24h change * 10, clamped from 0 to 100
 ```
 
 ---
 
-## Git Remote
+## Supabase Schema
 
-Branch: `main` — connected to GitHub origin.
-Push with: `git push origin main`
+```sql
+profiles
+  id uuid primary key references auth.users(id)
+  email text
+  name text
+  created_at timestamptz
+
+watchlist_items
+  id uuid primary key
+  user_id uuid references auth.users(id)
+  symbol text
+  created_at timestamptz
+  unique(user_id, symbol)
+```
+
+RLS: users can only read/write rows where `auth.uid()` matches their `id` or `user_id`.
+
+---
+
+## Git
+
+Branch: `main`
+Remote: `origin`
+Push: `git push origin main`
+
+Run the app with:
+
+```bash
+flutter run --dart-define-from-file=.env.json
+```
