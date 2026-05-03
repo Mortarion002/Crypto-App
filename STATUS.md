@@ -106,7 +106,7 @@ Validation on 2026-05-04:
 - Watchlist cloud sync intentionally favors local-first UX; remote failures are debug-logged but not surfaced to users yet.
 - Coin Detail now has empty/error states, but the visual treatment can still be polished.
 - App icon is wired for Android, iOS, web, Windows, and macOS.
-- Native launch surfaces are plain `#1D100E` while Flutter starts.
+- Native launch surfaces use `#FF5D52` with the app icon centered while Flutter starts, avoiding the blank black/white startup flash.
 
 ---
 

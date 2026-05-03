@@ -3,7 +3,7 @@
     "short_name": "crypto_pulse",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#1D100E",
+    "background_color": "#FF5D52",
     "theme_color": "#FF5D52",
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",
