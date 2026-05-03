@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:crypto_pulse/features/market/domain/entities/coin.dart';
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/controllers/coin_detail_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/domain/entities/kline_point.dart';
@@ -29,19 +30,43 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final marketState = ref.watch(marketControllerProvider);
-    final coin = marketState.value?.firstWhere(
-      (c) => c.symbol == widget.symbol,
-      orElse: () => marketState.value!.first,
-    );
+    final coins = marketState.value;
+
+    if (marketState.hasError) {
+      return _CoinUnavailableScaffold(
+        title: widget.symbol.replaceAll('USDT', ''),
+        message: 'Market data is unavailable right now.',
+      );
+    }
+
+    if (coins == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (coins.isEmpty) {
+      return _CoinUnavailableScaffold(
+        title: widget.symbol.replaceAll('USDT', ''),
+        message: 'No market data was returned for tracked coins.',
+      );
+    }
+
+    final matches = coins.where((c) => c.symbol == widget.symbol);
+    if (matches.isEmpty) {
+      return _CoinUnavailableScaffold(
+        title: widget.symbol.replaceAll('USDT', ''),
+        message: 'This coin is not available in the current market feed.',
+      );
+    }
+
+    final coin = matches.first;
 
     final params = CoinDetailParams(symbol: widget.symbol, interval: _interval);
     final klineState = ref.watch(coinDetailProvider(params));
-    final isWatched = ref.watch(watchlistControllerProvider
-        .select((list) => list.contains(widget.symbol)));
-
-    if (coin == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    final isWatched = ref.watch(
+      watchlistControllerProvider.select(
+        (list) => list.contains(widget.symbol),
+      ),
+    );
 
     final isUp = coin.isUp;
     final accentColor = isUp ? AppColors.mint : AppColors.vibrantCoral;
@@ -62,8 +87,10 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
     }
 
     // Sentiment bar value 0.0–1.0 centred at 0.5
-    final sentimentValue =
-        ((coin.priceChangePercent24h + 10) / 20).clamp(0.0, 1.0);
+    final sentimentValue = ((coin.priceChangePercent24h + 10) / 20).clamp(
+      0.0,
+      1.0,
+    );
     final bullPct = (sentimentValue * 100).round();
 
     final displaySymbol = widget.symbol.replaceAll('USDT', '');
@@ -76,7 +103,9 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
             // ── Top bar: back + title ──────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.containerPadding, vertical: 12),
+                horizontal: AppSpacing.containerPadding,
+                vertical: 12,
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -91,17 +120,20 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
                           color: AppColors.surfaceContainerHigh,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(LucideIcons.arrowLeft,
-                            size: 18, color: AppColors.onSurface),
+                        child: const Icon(
+                          LucideIcons.arrowLeft,
+                          size: 18,
+                          color: AppColors.onSurface,
+                        ),
                       ),
                     ),
                   ),
                   Text(
                     coin.name.toUpperCase(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                        ),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ],
               ),
@@ -110,14 +142,15 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
             // ── Interval selector (top) ────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.containerPadding, vertical: 4),
+                horizontal: AppSpacing.containerPadding,
+                vertical: 4,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.canvasLevel1,
                   borderRadius: AppRadius.fullRadius,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: List.generate(_intervalLabels.length, (i) {
@@ -138,9 +171,7 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
                           child: Center(
                             child: Text(
                               _intervalLabels[i],
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
+                              style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
                                     color: sel
                                         ? AppColors.onSurface
@@ -163,7 +194,8 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerPadding),
+                  horizontal: AppSpacing.containerPadding,
+                ),
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
@@ -192,36 +224,30 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
                         children: [
                           Text(
                             'MARKET SENTIMENT',
-                            style:
-                                Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: AppColors.onSurfaceVariant,
-                                      letterSpacing: 1.2,
-                                    ),
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  letterSpacing: 1.2,
+                                ),
                           ),
                           const SizedBox(height: 14),
                           Row(
                             children: [
                               Text(
                                 'Bearish',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelMedium
+                                style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(color: AppColors.vibrantCoral),
                               ),
                               const Spacer(),
                               Text(
                                 'Bullish',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelMedium
+                                style: Theme.of(context).textTheme.labelMedium
                                     ?.copyWith(color: AppColors.mint),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 '$bullPct%',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
+                                style: Theme.of(context).textTheme.headlineSmall
                                     ?.copyWith(
                                       color: accentColor,
                                       fontWeight: FontWeight.w800,
@@ -239,7 +265,8 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
                                 backgroundColor: AppColors.vibrantCoral
                                     .withValues(alpha: 0.35),
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.mint),
+                                  AppColors.mint,
+                                ),
                               ),
                             ),
                           ),
@@ -304,10 +331,11 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
             // ── Watchlist button (pinned bottom) ───────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.containerPadding,
-                  12,
-                  AppSpacing.containerPadding,
-                  20),
+                AppSpacing.containerPadding,
+                12,
+                AppSpacing.containerPadding,
+                20,
+              ),
               child: GestureDetector(
                 onTap: () => ref
                     .read(watchlistControllerProvider.notifier)
@@ -358,9 +386,64 @@ class _CoinDetailScreenState extends ConsumerState<CoinDetailScreen> {
   }
 }
 
+class _CoinUnavailableScaffold extends StatelessWidget {
+  final String title;
+  final String message;
+
+  const _CoinUnavailableScaffold({required this.title, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.containerPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppColors.surfaceContainerHigh,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    LucideIcons.arrowLeft,
+                    size: 18,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                title.toUpperCase(),
+                style: Theme.of(
+                  context,
+                ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Price card ───────────────────────────────────────────────────────────────
 class _PriceCard extends StatelessWidget {
-  final dynamic coin;
+  final Coin coin;
   final Color accentColor;
   final bool isUp;
   final NumberFormat currency;
@@ -378,14 +461,15 @@ class _PriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final spots = klineState.whenOrNull(
+    final spots =
+        klineState.whenOrNull(
           data: (klines) => klines.isEmpty
               ? null
               : klines
-                  .asMap()
-                  .entries
-                  .map((e) => FlSpot(e.key.toDouble(), e.value.close))
-                  .toList(),
+                    .asMap()
+                    .entries
+                    .map((e) => FlSpot(e.key.toDouble(), e.value.close))
+                    .toList(),
         ) ??
         [const FlSpot(0, 0)];
 
@@ -450,9 +534,9 @@ class _PriceCard extends StatelessWidget {
                 Text(
                   'LIVE PRICE',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                        letterSpacing: 1.2,
-                      ),
+                    color: AppColors.onSurfaceVariant,
+                    letterSpacing: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -461,9 +545,7 @@ class _PriceCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         currency.format(coin.currentPrice),
-                        style: Theme.of(context)
-                            .textTheme
-                            .displaySmall
+                        style: Theme.of(context).textTheme.displaySmall
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
                               letterSpacing: -1,
@@ -473,7 +555,9 @@ class _PriceCard extends StatelessWidget {
                     // Badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: accentColor.withValues(alpha: 0.85),
                         borderRadius: AppRadius.fullRadius,
@@ -486,9 +570,7 @@ class _PriceCard extends StatelessWidget {
                                 ? LucideIcons.trendingUp
                                 : LucideIcons.trendingDown,
                             size: 13,
-                            color: isUp
-                                ? AppColors.canvasLevel0
-                                : Colors.white,
+                            color: isUp ? AppColors.canvasLevel0 : Colors.white,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -513,17 +595,17 @@ class _PriceCard extends StatelessWidget {
                     Text(
                       '24H VOLUME',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            letterSpacing: 1.0,
-                          ),
+                        color: AppColors.onSurfaceVariant,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                     Text(
-                      NumberFormat.compactCurrency(symbol: '\$')
-                          .format(coin.volume24h),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      NumberFormat.compactCurrency(
+                        symbol: '\$',
+                      ).format(coin.volume24h),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -566,17 +648,16 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                  letterSpacing: 1.0,
-                ),
+              color: AppColors.onSurfaceVariant,
+              letterSpacing: 1.0,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

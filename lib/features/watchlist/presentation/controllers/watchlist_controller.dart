@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 
 final watchlistControllerProvider =
-    NotifierProvider<WatchlistController, List<String>>(() => WatchlistController());
+    NotifierProvider<WatchlistController, List<String>>(
+      () => WatchlistController(),
+    );
 
 class WatchlistController extends Notifier<List<String>> {
   static const _key = 'user_watchlist';
@@ -51,7 +54,9 @@ class WatchlistController extends Notifier<List<String>> {
         await prefs.setStringList(_key, merged);
         state = merged;
       }
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      _debugLogCloudSyncFailure('merge', error, stackTrace);
+    }
   }
 
   void _cloudAdd(String symbol) {
@@ -60,7 +65,12 @@ class WatchlistController extends Notifier<List<String>> {
     Supabase.instance.client
         .from('watchlist_items')
         .upsert({'user_id': user.id, 'symbol': symbol})
-        .then((_) {}, onError: (_) {});
+        .then(
+          (_) {},
+          onError: (Object error, StackTrace stackTrace) {
+            _debugLogCloudSyncFailure('add $symbol', error, stackTrace);
+          },
+        );
   }
 
   void _cloudRemove(String symbol) {
@@ -71,6 +81,21 @@ class WatchlistController extends Notifier<List<String>> {
         .delete()
         .eq('user_id', user.id)
         .eq('symbol', symbol)
-        .then((_) {}, onError: (_) {});
+        .then(
+          (_) {},
+          onError: (Object error, StackTrace stackTrace) {
+            _debugLogCloudSyncFailure('remove $symbol', error, stackTrace);
+          },
+        );
+  }
+
+  void _debugLogCloudSyncFailure(
+    String action,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    if (!kDebugMode) return;
+    debugPrint('Watchlist cloud sync failed during $action: $error');
+    debugPrintStack(stackTrace: stackTrace);
   }
 }

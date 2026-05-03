@@ -82,9 +82,9 @@ Validation on 2026-05-04:
 - [x] Add focused tests for settings-related behavior.
 
 ### Phase 4 - Resilience And Data Safety
-- [ ] Harden Coin Detail when market data is empty or the requested symbol is absent.
-- [ ] Improve watchlist cloud sync failure handling enough that failures are visible in debug logs and do not silently corrupt local state.
-- [ ] Avoid duplicate background requests where possible.
+- [x] Harden Coin Detail when market data is empty or the requested symbol is absent.
+- [x] Improve watchlist cloud sync failure handling enough that failures are visible in debug logs and do not silently corrupt local state.
+- [x] Avoid duplicate background requests where possible.
 
 ### Phase 5 - App Polish
 - [x] Fix remaining analyzer info notes.
@@ -101,8 +101,8 @@ Validation on 2026-05-04:
 
 - Bell icon currently explains where volatility alerts appear; richer notification settings are not built.
 - Profile theme row is intentionally locked to dark because the app only ships a dark theme right now.
-- Watchlist cloud sync intentionally favors local-first UX, but remote write failures are swallowed.
-- Coin Detail needs a better empty/error state when market data is unavailable.
+- Watchlist cloud sync intentionally favors local-first UX; remote failures are debug-logged but not surfaced to users yet.
+- Coin Detail now has empty/error states, but the visual treatment can still be polished.
 - App icon is not wired up.
 
 ---
