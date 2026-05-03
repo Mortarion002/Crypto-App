@@ -37,6 +37,45 @@ Color _coinColor(String symbol) {
   }
 }
 
+// ── Market filter ─────────────────────────────────────────────────────────────
+enum _MarketFilter {
+  all,
+  gainers,
+  losers;
+
+  String get label {
+    switch (this) {
+      case _MarketFilter.all:
+        return 'All Markets';
+      case _MarketFilter.gainers:
+        return 'Top Gainers';
+      case _MarketFilter.losers:
+        return 'Top Losers';
+    }
+  }
+
+  List<Coin> apply(List<Coin> coins) {
+    switch (this) {
+      case _MarketFilter.all:
+        return coins;
+      case _MarketFilter.gainers:
+        return coins.where((c) => c.isUp).toList()
+          ..sort(
+            (a, b) => b.priceChangePercent24h.compareTo(
+              a.priceChangePercent24h,
+            ),
+          );
+      case _MarketFilter.losers:
+        return coins.where((c) => !c.isUp).toList()
+          ..sort(
+            (a, b) => a.priceChangePercent24h.compareTo(
+              b.priceChangePercent24h,
+            ),
+          );
+    }
+  }
+}
+
 // ── Notification data model ──────────────────────────────────────────────────
 class _NotifData {
   final IconData icon;
@@ -100,11 +139,32 @@ const _kNotifications = [
 ];
 
 // ── Market Screen ─────────────────────────────────────────────────────────────
-class MarketScreen extends ConsumerWidget {
+class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarketScreen> createState() => _MarketScreenState();
+}
+
+class _MarketScreenState extends ConsumerState<MarketScreen> {
+  _MarketFilter _filter = _MarketFilter.all;
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _FilterSheet(
+        current: _filter,
+        onSelect: (f) {
+          setState(() => _filter = f);
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final marketState = ref.watch(marketControllerProvider);
     final insightsState = ref.watch(insightsControllerProvider);
     final user = ref.watch(authControllerProvider).asData?.value;
@@ -178,7 +238,10 @@ class MarketScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      _MarketSelector(),
+                      _MarketSelector(
+                        label: _filter.label,
+                        onTap: _showFilterSheet,
+                      ),
                     ],
                   ),
                 ),
@@ -214,17 +277,66 @@ class MarketScreen extends ConsumerWidget {
                 child: SizedBox(height: AppSpacing.sectionMargin),
               ),
 
-              // ── Top Movers header ─────────────────────────────────────
+              // ── Section header ────────────────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.containerPadding,
                 ),
                 sliver: SliverToBoxAdapter(
-                  child: Text(
-                    'Top Movers',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        _filter == _MarketFilter.all
+                            ? 'Top Movers'
+                            : _filter.label,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      // Active filter badge (shown when not All)
+                      if (_filter != _MarketFilter.all)
+                        GestureDetector(
+                          onTap: () => setState(
+                            () => _filter = _MarketFilter.all,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.vibrantCoral.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: AppRadius.fullRadius,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Clear',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.vibrantCoral,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  LucideIcons.x,
+                                  size: 12,
+                                  color: AppColors.vibrantCoral,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -237,24 +349,44 @@ class MarketScreen extends ConsumerWidget {
                   horizontal: AppSpacing.containerPadding,
                 ),
                 sliver: marketState.when(
-                  data: (coins) => SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      if (index == coins.length) {
-                        return const SizedBox(height: 100);
-                      }
-                      return _CoinTile(
-                            coin: coins[index],
-                            accentColor: _coinColor(coins[index].symbol),
-                            onTap: () => context.pushNamed(
-                              RouteNames.coinDetail,
-                              pathParameters: {'symbol': coins[index].symbol},
+                  data: (coins) {
+                    final displayed = _filter.apply(coins);
+                    if (displayed.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 40),
+                          child: Center(
+                            child: Text(
+                              'No ${_filter.label.toLowerCase()} right now.',
+                              style: TextStyle(
+                                color: AppColors.onSurfaceVariant,
+                              ),
                             ),
-                          )
-                          .animate()
-                          .fadeIn(duration: 400.ms, delay: (index * 60).ms)
-                          .slideX(begin: 0.08, end: 0);
-                    }, childCount: coins.length + 1),
-                  ),
+                          ),
+                        ),
+                      );
+                    }
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index == displayed.length) {
+                          return const SizedBox(height: 100);
+                        }
+                        return _CoinTile(
+                              coin: displayed[index],
+                              accentColor: _coinColor(displayed[index].symbol),
+                              onTap: () => context.pushNamed(
+                                RouteNames.coinDetail,
+                                pathParameters: {
+                                  'symbol': displayed[index].symbol,
+                                },
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(duration: 400.ms, delay: (index * 60).ms)
+                            .slideX(begin: 0.08, end: 0);
+                      }, childCount: displayed.length + 1),
+                    );
+                  },
                   loading: () => SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (_, _) => _CoinTileSkeleton(),
@@ -307,22 +439,6 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Avatar
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.surfaceContainerHigh,
-            border: Border.all(color: AppColors.outline, width: 1),
-          ),
-          child: const Icon(
-            LucideIcons.user,
-            size: 18,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-        const Spacer(),
         Text(
           'CRYPTO PULSE',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -378,31 +494,39 @@ class _Header extends StatelessWidget {
 
 // ── Market selector pill ──────────────────────────────────────────────────────
 class _MarketSelector extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _MarketSelector({required this.label, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
-        borderRadius: AppRadius.fullRadius,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Crypto Market',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.onSurface,
-              fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh,
+          borderRadius: AppRadius.fullRadius,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
-          const Icon(
-            LucideIcons.chevronDown,
-            size: 14,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ],
+            const SizedBox(width: 4),
+            const Icon(
+              LucideIcons.chevronDown,
+              size: 14,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -494,6 +618,9 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
   @override
   Widget build(BuildContext context) {
     final insightsState = ref.watch(insightsControllerProvider);
+    final allCoins =
+        ref.watch(marketControllerProvider).asData?.value ?? [];
+
     final isUp =
         insightsState.whenOrNull(
           data: (i) => i.marketMood == MarketMood.bullish,
@@ -526,6 +653,8 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
     final range = maxY - minY;
     minY -= range * 0.1;
     maxY += range * 0.1;
+
+    final totalVol = allCoins.fold(0.0, (double s, c) => s + c.volume24h);
 
     return Container(
       height: 200,
@@ -626,42 +755,18 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        insightsState.when(
-                          data: (i) {
-                            final totalVol =
-                                i.topGainers.isEmpty && i.topLosers.isEmpty
-                                ? '--'
-                                : NumberFormat.compactCurrency(
-                                    symbol: '\$',
-                                  ).format(
-                                    i.topGainers.fold(
-                                          0.0,
-                                          (s, c) => s + c.volume24h,
-                                        ) +
-                                        i.topLosers.fold(
-                                          0.0,
-                                          (s, c) => s + c.volume24h,
-                                        ),
-                                  );
-                            return Text(
-                              totalVol,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -1,
-                              ),
-                            );
-                          },
-                          loading: () => const Text(
-                            '--',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                            ),
+                        Text(
+                          totalVol > 0
+                              ? NumberFormat.compactCurrency(
+                                  symbol: '\$',
+                                ).format(totalVol)
+                              : '--',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -1,
                           ),
-                          error: (_, _) => const SizedBox.shrink(),
                         ),
                         Text(
                           'Combined Volume',
@@ -868,6 +973,152 @@ class _CoinTileSkeleton extends StatelessWidget {
   }
 }
 
+// ── Filter Sheet ──────────────────────────────────────────────────────────────
+class _FilterSheet extends StatelessWidget {
+  final _MarketFilter current;
+  final ValueChanged<_MarketFilter> onSelect;
+
+  const _FilterSheet({required this.current, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 16),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Title
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'FILTER MARKET',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
+          // Options
+          ..._MarketFilter.values.map(
+            (f) => _FilterOption(
+              filter: f,
+              isSelected: f == current,
+              onTap: () => onSelect(f),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterOption extends StatelessWidget {
+  final _MarketFilter filter;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterOption({
+    required this.filter,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  IconData get _icon {
+    switch (filter) {
+      case _MarketFilter.all:
+        return LucideIcons.layoutGrid;
+      case _MarketFilter.gainers:
+        return LucideIcons.trendingUp;
+      case _MarketFilter.losers:
+        return LucideIcons.trendingDown;
+    }
+  }
+
+  Color get _color {
+    switch (filter) {
+      case _MarketFilter.all:
+        return AppColors.onSurfaceVariant;
+      case _MarketFilter.gainers:
+        return AppColors.mint;
+      case _MarketFilter.losers:
+        return AppColors.vibrantCoral;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? _color.withValues(alpha: 0.08)
+              : Colors.transparent,
+          border: Border(
+            top: BorderSide(
+              color: AppColors.outlineVariant.withValues(alpha: 0.4),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: isSelected ? 0.15 : 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(_icon, size: 16, color: _color),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                filter.label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? AppColors.onSurface
+                      : AppColors.onSurfaceVariant,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                LucideIcons.check,
+                size: 18,
+                color: _color,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Search Sheet ──────────────────────────────────────────────────────────────
 class _SearchSheet extends ConsumerStatefulWidget {
   const _SearchSheet();
@@ -1062,68 +1313,83 @@ class _NotificationsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.78,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 16),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 16),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
 
-          // Title row
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'NOTIFICATIONS',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppColors.onSurface,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.vibrantCoral.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: Text(
-                    '2 NEW',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.vibrantCoral,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
+            // Title row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'NOTIFICATIONS',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
                     ),
                   ),
-                ),
-              ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.vibrantCoral.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: Text(
+                      '2 NEW',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.vibrantCoral,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // Notification rows
-          ..._kNotifications.map((item) => _NotifRow(item: item)),
-
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-        ],
+            // Scrollable notification rows
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ..._kNotifications.map((item) => _NotifRow(item: item)),
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
