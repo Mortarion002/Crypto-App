@@ -9,8 +9,8 @@ Last updated: 2026-05-04
 Crypto Pulse is a Flutter mobile crypto sentiment dashboard using Binance public market APIs, Supabase auth/database, Riverpod state management, GoRouter navigation, SharedPreferences local storage, and the "Vivid Intelligence" dark editorial design system from the Stitch references.
 
 Validation on 2026-05-04:
-- `flutter test` passes: 65 tests.
-- `dart analyze` has 4 info-level style notes only, all for unnecessary multiple underscore callback names.
+- `flutter test` passes: 66 tests.
+- `dart analyze` has no issues.
 - Git remote: `origin` -> `https://github.com/Mortarion002/Crypto-App.git`.
 
 ---
@@ -68,18 +68,18 @@ Validation on 2026-05-04:
 ### Phase 1 - Status And Roadmap Hygiene
 - [x] Replace stale status notes with current implementation reality.
 - [x] Record validation state and remaining risks.
-- [ ] Keep this file updated after each implementation batch.
+- [x] Keep this file updated after each implementation batch.
 
 ### Phase 2 - Wire Existing UI Actions
-- [ ] Replace hardcoded `Hi, Aman!` with the signed-in user's display name.
-- [ ] Route profile's signed-out Sign In action to login.
-- [ ] Wire search icons to useful behavior or remove inactive affordances.
-- [ ] Ensure labels do not claim unavailable behavior.
+- [x] Replace hardcoded `Hi, Aman!` with the signed-in user's display name.
+- [x] Route profile's signed-out Sign In action to login.
+- [x] Wire search icons to useful behavior or remove inactive affordances.
+- [x] Ensure labels do not claim unavailable behavior.
 
 ### Phase 3 - Settings Behavior
-- [ ] Make Profile's live refresh toggle affect market auto-refresh.
-- [ ] Keep dark theme toggle persisted, but avoid pretending a light theme exists until implemented.
-- [ ] Add focused tests for settings-related behavior.
+- [x] Make Profile's live refresh toggle affect market auto-refresh.
+- [x] Keep dark theme toggle persisted, but avoid pretending a light theme exists until implemented.
+- [x] Add focused tests for settings-related behavior.
 
 ### Phase 4 - Resilience And Data Safety
 - [ ] Harden Coin Detail when market data is empty or the requested symbol is absent.
@@ -87,7 +87,7 @@ Validation on 2026-05-04:
 - [ ] Avoid duplicate background requests where possible.
 
 ### Phase 5 - App Polish
-- [ ] Fix remaining analyzer info notes.
+- [x] Fix remaining analyzer info notes.
 - [ ] Wire app icon assets and launcher icon generation.
 - [ ] Add visual QA pass on a device/emulator or browser target.
 
@@ -99,10 +99,8 @@ Validation on 2026-05-04:
 
 ## Known Remaining Issues
 
-- Home greeting is currently hardcoded in code and should use `authControllerProvider`.
-- Some search/bell icon buttons are placeholders.
-- Profile live refresh setting is persisted but not yet connected to `MarketController`.
-- Profile dark mode setting is persisted, but the app only ships a dark theme right now.
+- Bell icon currently explains where volatility alerts appear; richer notification settings are not built.
+- Profile theme row is intentionally locked to dark because the app only ships a dark theme right now.
 - Watchlist cloud sync intentionally favors local-first UX, but remote write failures are swallowed.
 - Coin Detail needs a better empty/error state when market data is unavailable.
 - App icon is not wired up.

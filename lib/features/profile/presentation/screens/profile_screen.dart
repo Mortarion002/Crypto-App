@@ -4,11 +4,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
+import 'package:crypto_pulse/core/config/preference_keys.dart';
 import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 import 'package:crypto_pulse/core/theme/app_spacing.dart';
 import 'package:crypto_pulse/core/theme/app_radius.dart';
 import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -18,15 +20,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  late bool _darkMode;
   late bool _liveRefresh;
 
   @override
   void initState() {
     super.initState();
     final prefs = ref.read(sharedPreferencesProvider);
-    _darkMode = prefs.getBool('pref_dark_mode') ?? true;
-    _liveRefresh = prefs.getBool('pref_live_refresh') ?? true;
+    _liveRefresh = prefs.getBool(PreferenceKeys.liveRefresh) ?? true;
   }
 
   @override
@@ -209,14 +209,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _SettingsRow(
                       icon: LucideIcons.moon,
                       label: 'Theme',
-                      subtitle: 'Editorial Dark Mode',
-                      value: _darkMode,
-                      onChanged: (v) async {
-                        setState(() => _darkMode = v);
-                        await ref
-                            .read(sharedPreferencesProvider)
-                            .setBool('pref_dark_mode', v);
-                      },
+                      subtitle: 'High-Contrast Dark Mode',
+                      value: true,
+                      onChanged: null,
                     ),
 
                     const SizedBox(height: 10),
@@ -230,7 +225,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         setState(() => _liveRefresh = v);
                         await ref
                             .read(sharedPreferencesProvider)
-                            .setBool('pref_live_refresh', v);
+                            .setBool(PreferenceKeys.liveRefresh, v);
+                        ref.invalidate(marketControllerProvider);
                       },
                     ),
 
@@ -315,7 +311,7 @@ class _SettingsRow extends StatelessWidget {
   final String label;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   const _SettingsRow({
     required this.icon,
