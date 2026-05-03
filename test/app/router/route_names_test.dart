@@ -10,6 +10,7 @@ void main() {
       expect(RouteNames.home, isNotEmpty);
       expect(RouteNames.insights, isNotEmpty);
       expect(RouteNames.watchlist, isNotEmpty);
+      expect(RouteNames.settings, isNotEmpty);
       expect(RouteNames.profile, isNotEmpty);
       expect(RouteNames.coinDetail, isNotEmpty);
     });
@@ -22,11 +23,15 @@ void main() {
         RouteNames.home,
         RouteNames.insights,
         RouteNames.watchlist,
+        RouteNames.settings,
         RouteNames.profile,
         RouteNames.coinDetail,
       ];
-      expect(names.toSet().length, equals(names.length),
-          reason: 'Duplicate route names found');
+      expect(
+        names.toSet().length,
+        equals(names.length),
+        reason: 'Duplicate route names found',
+      );
     });
 
     test('expected name values', () {
@@ -36,6 +41,7 @@ void main() {
       expect(RouteNames.home, 'home');
       expect(RouteNames.insights, 'insights');
       expect(RouteNames.watchlist, 'watchlist');
+      expect(RouteNames.settings, 'settings');
       expect(RouteNames.profile, 'profile');
       expect(RouteNames.coinDetail, 'coinDetail');
     });
@@ -50,12 +56,12 @@ void main() {
         RoutePaths.home,
         RoutePaths.insights,
         RoutePaths.watchlist,
+        RoutePaths.settings,
         RoutePaths.profile,
         RoutePaths.coinDetail,
       ];
       for (final path in paths) {
-        expect(path, startsWith('/'),
-            reason: '"$path" should start with /');
+        expect(path, startsWith('/'), reason: '"$path" should start with /');
       }
     });
 
@@ -66,6 +72,7 @@ void main() {
       expect(RoutePaths.home, '/home');
       expect(RoutePaths.insights, '/insights');
       expect(RoutePaths.watchlist, '/watchlist');
+      expect(RoutePaths.settings, '/settings');
       expect(RoutePaths.profile, '/profile');
       expect(RoutePaths.coinDetail, '/coin/:symbol');
     });
@@ -87,11 +94,15 @@ void main() {
         RoutePaths.home,
         RoutePaths.insights,
         RoutePaths.watchlist,
+        RoutePaths.settings,
         RoutePaths.profile,
         RoutePaths.coinDetail,
       ];
-      expect(paths.toSet().length, equals(paths.length),
-          reason: 'Duplicate route paths found');
+      expect(
+        paths.toSet().length,
+        equals(paths.length),
+        reason: 'Duplicate route paths found',
+      );
     });
 
     test('main shell routes do not start with /auth', () {
@@ -99,11 +110,14 @@ void main() {
         RoutePaths.home,
         RoutePaths.insights,
         RoutePaths.watchlist,
-        RoutePaths.profile,
+        RoutePaths.settings,
       ];
       for (final path in shellRoutes) {
-        expect(path, isNot(startsWith('/auth')),
-            reason: '$path should not be an auth route');
+        expect(
+          path,
+          isNot(startsWith('/auth')),
+          reason: '$path should not be an auth route',
+        );
       }
     });
   });

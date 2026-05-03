@@ -12,7 +12,8 @@ A high-contrast, editorial-style crypto market tracker built with Flutter. Live 
 | **Coin Detail** | Full price chart with 1D / 1W / 1M interval selector, OHLC stats grid, volatility %, watchlist CTA |
 | **Insights** | Market mood card (BULLISH / BEARISH / NEUTRAL), volatility gauge (CustomPainter arc + needle), top gainers & losers, AI protocol insight text |
 | **Watchlist** | Saved coins with 20-point sparkline, sentiment label, local + Supabase cloud sync |
-| **Profile** | Supabase session info, settings toggles (dark mode, live refresh), sign out |
+| **Settings** | Profile entry point, dark theme status, live refresh toggle, sign in/out |
+| **Profile** | Supabase session info and account details |
 | **Onboarding** | 4-page animated walkthrough with wave painter, stacked card preview, mini bar chart, and large gauge |
 | **Auth** | Email/password sign in & sign up, dark fintech design, inline error messages |
 
@@ -83,7 +84,7 @@ lib/
     ├── onboarding/
     │   └── presentation/    # OnboardingScreen (4-page PageView)
     └── profile/
-        └── presentation/    # ProfileScreen (reads authControllerProvider)
+        └── presentation/    # SettingsScreen + ProfileScreen
 ```
 
 ### State management patterns
@@ -130,7 +131,8 @@ The router uses a **redirect-based auth guard** evaluated on every navigation an
 /home                → MarketScreen       ┐
 /insights            → InsightsScreen     ├ ShellRoute (bottom nav bar)
 /watchlist           → WatchlistScreen    │
-/profile             → ProfileScreen      ┘
+/settings            → SettingsScreen     ┘
+/profile             → ProfileScreen      (outside shell, opened from Settings)
 /coin/:symbol        → CoinDetailScreen   (outside shell, no nav bar)
 ```
 

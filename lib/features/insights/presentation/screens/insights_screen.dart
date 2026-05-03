@@ -541,13 +541,14 @@ class _InsightProtocolCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: const [
               _ActionPill(
                 label: 'VIEW TOP GAINERS',
                 icon: LucideIcons.trendingUp,
               ),
-              const SizedBox(width: 10),
               _ActionPill(
                 label: 'CHECK VOLATILITY',
                 icon: LucideIcons.activity,

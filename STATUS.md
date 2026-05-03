@@ -23,7 +23,7 @@ Validation on 2026-05-04:
 - [x] Feature-first folder architecture under `features/`, `core/`, and `app/`.
 - [x] App theme system: `AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, and dark `ThemeData`.
 - [x] GoRouter with onboarding, auth, shell tabs, coin detail, auth redirect guard, and `RouterRefreshNotifier`.
-- [x] Floating pill-style bottom navigation in `AppScaffold`.
+- [x] Floating pill-style bottom navigation in `AppScaffold` with Settings as the last tab.
 - [x] Riverpod `ProviderScope` and SharedPreferences override wired in `main.dart`.
 - [x] Secret loading via `--dart-define-from-file=.env.json`.
 - [x] `.env.example.json` committed; `.env.json` gitignored.
@@ -49,9 +49,10 @@ Validation on 2026-05-04:
 - [x] Login and signup: Supabase email/password auth with inline errors.
 - [x] Market: personalized-style header, market selector, high-volatility alert, Market Pulse card with BTC chart, top movers, colored coin accent bars.
 - [x] Coin Detail: interval selector, price card with chart background, sentiment strength bar, 2x2 stats grid, pinned watchlist CTA.
-- [x] Insights: large editorial heading, Market Mood card with LIVE badge, circular volatility gauge, AI Protocol card, gainers/losers lists.
+- [x] Insights: large editorial heading, Market Mood card with LIVE badge, circular volatility gauge, responsive AI Protocol card, gainers/losers lists.
 - [x] Watchlist: search bar, live saved coins, sparklines, sentiment labels, empty/end states.
-- [x] Profile: user identity, Supabase status badge, settings toggles persisted to SharedPreferences, sign out.
+- [x] Settings: profile entry point, dark theme status, live refresh toggle persisted to SharedPreferences, sign in/out.
+- [x] Profile: user identity, Supabase status badge, account details, sign out.
 
 ### Tests
 - [x] `test/features/auth/domain/app_user_test.dart`
@@ -91,6 +92,8 @@ Validation on 2026-05-04:
 - [x] Fix remaining analyzer info notes.
 - [x] Wire app icon assets and launcher icon generation.
 - [x] Replace the default black/white native launch splash with the app background color.
+- [x] Move Profile out of the bottom tab bar and add Settings as the last tab.
+- [x] Fix Insights AI Protocol action overflow on narrow screens.
 - [ ] Add visual QA pass on a device/emulator or browser target.
 
 ### Phase 6 - Publish Rhythm
@@ -102,7 +105,7 @@ Validation on 2026-05-04:
 ## Known Remaining Issues
 
 - Bell icon currently explains where volatility alerts appear; richer notification settings are not built.
-- Profile theme row is intentionally locked to dark because the app only ships a dark theme right now.
+- Settings theme row is intentionally locked to dark because the app only ships a dark theme right now.
 - Watchlist cloud sync intentionally favors local-first UX; remote failures are debug-logged but not surfaced to users yet.
 - Coin Detail now has empty/error states, but the visual treatment can still be polished.
 - App icon is wired for Android, iOS, web, Windows, and macOS.

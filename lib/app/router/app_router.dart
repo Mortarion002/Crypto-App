@@ -9,6 +9,7 @@ import 'package:crypto_pulse/features/insights/presentation/screens/insights_scr
 import 'package:crypto_pulse/features/coin_detail/presentation/screens/coin_detail_screen.dart';
 import 'package:crypto_pulse/features/watchlist/presentation/screens/watchlist_screen.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/profile_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/settings_screen.dart';
 import 'package:crypto_pulse/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:crypto_pulse/features/auth/presentation/screens/login_screen.dart';
 import 'package:crypto_pulse/features/auth/presentation/screens/signup_screen.dart';
@@ -62,10 +63,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // ── Main shell with bottom nav ─────────────────────────────────
       ShellRoute(
-        builder: (context, state, child) => AppScaffold(
-          currentPath: state.uri.path,
-          child: child,
-        ),
+        builder: (context, state, child) =>
+            AppScaffold(currentPath: state.uri.path, child: child),
         routes: [
           GoRoute(
             path: RoutePaths.home,
@@ -83,14 +82,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const WatchlistScreen(),
           ),
           GoRoute(
-            path: RoutePaths.profile,
-            name: RouteNames.profile,
-            builder: (context, state) => const ProfileScreen(),
+            path: RoutePaths.settings,
+            name: RouteNames.settings,
+            builder: (context, state) => const SettingsScreen(),
           ),
         ],
       ),
 
       // ── Coin detail (outside shell) ────────────────────────────────
+      GoRoute(
+        path: RoutePaths.profile,
+        name: RouteNames.profile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+
       GoRoute(
         path: RoutePaths.coinDetail,
         name: RouteNames.coinDetail,

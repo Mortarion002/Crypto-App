@@ -9,7 +9,11 @@ class AppScaffold extends StatelessWidget {
   final Widget child;
   final String currentPath;
 
-  const AppScaffold({super.key, required this.child, required this.currentPath});
+  const AppScaffold({
+    super.key,
+    required this.child,
+    required this.currentPath,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +57,10 @@ class AppScaffold extends StatelessWidget {
                 onTap: () => context.goNamed(RouteNames.watchlist),
               ),
               _NavItem(
-                icon: LucideIcons.user,
-                label: 'Profile',
-                isActive: currentPath == RoutePaths.profile,
-                onTap: () => context.goNamed(RouteNames.profile),
+                icon: LucideIcons.settings,
+                label: 'Settings',
+                isActive: currentPath == RoutePaths.settings,
+                onTap: () => context.goNamed(RouteNames.settings),
               ),
             ],
           ),
@@ -88,7 +92,9 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.cyanHighlight.withValues(alpha: 0.1) : Colors.transparent,
+          color: isActive
+              ? AppColors.cyanHighlight.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: AppRadius.fullRadius,
         ),
         child: Row(
@@ -96,7 +102,9 @@ class _NavItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? AppColors.cyanHighlight : AppColors.onSurfaceVariant,
+              color: isActive
+                  ? AppColors.cyanHighlight
+                  : AppColors.onSurfaceVariant,
               size: 24,
             ),
             if (isActive) ...[
@@ -104,11 +112,11 @@ class _NavItem extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.cyanHighlight,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: AppColors.cyanHighlight,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ]
+            ],
           ],
         ),
       ),
