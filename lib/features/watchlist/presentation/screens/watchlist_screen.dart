@@ -35,7 +35,14 @@ class WatchlistScreen extends ConsumerStatefulWidget {
 }
 
 class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
+  final _searchFocusNode = FocusNode();
   String _query = '';
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +57,11 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
             // ── Header ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.containerPadding, 16, AppSpacing.containerPadding, 0),
+                AppSpacing.containerPadding,
+                16,
+                AppSpacing.containerPadding,
+                0,
+              ),
               child: Row(
                 children: [
                   Container(
@@ -61,23 +72,26 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                       color: AppColors.surfaceContainerHigh,
                       border: Border.all(color: AppColors.outline, width: 1),
                     ),
-                    child: const Icon(LucideIcons.user,
-                        size: 18, color: AppColors.onSurfaceVariant),
+                    child: const Icon(
+                      LucideIcons.user,
+                      size: 18,
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     'WATCHLIST',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.vibrantCoral,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                        ),
+                      color: AppColors.vibrantCoral,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(LucideIcons.search, size: 20),
                     color: AppColors.onSurfaceVariant,
-                    onPressed: () {},
+                    onPressed: _searchFocusNode.requestFocus,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -88,23 +102,33 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
             // ── Search bar ─────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.containerPadding, 16, AppSpacing.containerPadding, 0),
+                AppSpacing.containerPadding,
+                16,
+                AppSpacing.containerPadding,
+                0,
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.canvasLevel1,
                   borderRadius: AppRadius.mdRadius,
                 ),
                 child: TextField(
+                  focusNode: _searchFocusNode,
                   onChanged: (v) => setState(() => _query = v.toLowerCase()),
                   style: const TextStyle(color: AppColors.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Search coins...',
                     hintStyle: TextStyle(color: AppColors.onSurfaceVariant),
-                    prefixIcon: const Icon(LucideIcons.search,
-                        size: 18, color: AppColors.onSurfaceVariant),
+                    prefixIcon: const Icon(
+                      LucideIcons.search,
+                      size: 18,
+                      color: AppColors.onSurfaceVariant,
+                    ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                 ),
               ),
@@ -118,15 +142,18 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                 data: (coins) {
                   final watchedCoins = coins
                       .where((c) => watchlist.contains(c.symbol))
-                      .where((c) =>
-                          _query.isEmpty ||
-                          c.name.toLowerCase().contains(_query) ||
-                          c.symbol.toLowerCase().contains(_query))
+                      .where(
+                        (c) =>
+                            _query.isEmpty ||
+                            c.name.toLowerCase().contains(_query) ||
+                            c.symbol.toLowerCase().contains(_query),
+                      )
                       .toList();
 
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.containerPadding),
+                      horizontal: AppSpacing.containerPadding,
+                    ),
                     itemCount: watchedCoins.length + 1,
                     itemBuilder: (context, index) {
                       if (index == watchedCoins.length) {
@@ -138,27 +165,32 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                         coin: watchedCoins[index],
                         onTap: () => context.pushNamed(
                           RouteNames.coinDetail,
-                          pathParameters: {'symbol': watchedCoins[index].symbol},
+                          pathParameters: {
+                            'symbol': watchedCoins[index].symbol,
+                          },
                         ),
                         onRemove: () => ref
                             .read(watchlistControllerProvider.notifier)
                             .toggleWatchlist(watchedCoins[index].symbol),
                       ).animate().fadeIn(
-                            duration: 350.ms,
-                            delay: (index * 60).ms,
-                          );
+                        duration: 350.ms,
+                        delay: (index * 60).ms,
+                      );
                     },
                   );
                 },
                 loading: () => ListView.builder(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.containerPadding),
+                    horizontal: AppSpacing.containerPadding,
+                  ),
                   itemCount: 4,
                   itemBuilder: (context, _) => _TileSkeleton(),
                 ),
                 error: (e, _) => Center(
-                  child: Text('Failed to load.',
-                      style: TextStyle(color: AppColors.vibrantCoral)),
+                  child: Text(
+                    'Failed to load.',
+                    style: TextStyle(color: AppColors.vibrantCoral),
+                  ),
                 ),
               ),
             ),
@@ -230,17 +262,14 @@ class _WatchlistTile extends ConsumerWidget {
                     children: [
                       Text(
                         displaySymbol,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       Text(
                         coin.name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(color: AppColors.onSurfaceVariant),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -251,10 +280,9 @@ class _WatchlistTile extends ConsumerWidget {
                   children: [
                     Text(
                       '\$${_formatPrice(coin.currentPrice)}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -269,11 +297,11 @@ class _WatchlistTile extends ConsumerWidget {
                         const SizedBox(width: 3),
                         Text(
                           '${isUp ? '+' : ''}${coin.priceChangePercent24h.toStringAsFixed(1)}%',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: changeColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: changeColor,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ],
                     ),
@@ -287,16 +315,17 @@ class _WatchlistTile extends ConsumerWidget {
             SizedBox(
               height: 48,
               child: sparklineState.when(
-                data: (klines) => _Sparkline(
-                    klines: klines, color: sentimentColor),
+                data: (klines) =>
+                    _Sparkline(klines: klines, color: sentimentColor),
                 loading: () => Shimmer.fromColors(
                   baseColor: AppColors.canvasLevel1,
                   highlightColor: AppColors.surfaceBright,
                   child: Container(
-                      height: 48,
-                      color: Colors.white.withValues(alpha: 0.05)),
+                    height: 48,
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
             ),
 
@@ -308,15 +337,18 @@ class _WatchlistTile extends ConsumerWidget {
                 Text(
                   'SENTIMENT: ${_sentimentLabel(coin)}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: sentimentColor,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
+                    color: sentimentColor,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 GestureDetector(
                   onTap: onRemove,
-                  child: const Icon(LucideIcons.bookmark,
-                      size: 18, color: AppColors.onSurfaceVariant),
+                  child: const Icon(
+                    LucideIcons.bookmark,
+                    size: 18,
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -402,30 +434,32 @@ class _EmptyStateFooter extends StatelessWidget {
       children: [
         if (!hasCoins) ...[
           const SizedBox(height: 60),
-          const Icon(LucideIcons.packageOpen,
-              size: 48, color: AppColors.onSurfaceVariant),
+          const Icon(
+            LucideIcons.packageOpen,
+            size: 48,
+            color: AppColors.onSurfaceVariant,
+          ),
           const SizedBox(height: 16),
           Text(
             'No coins saved yet.',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: AppColors.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Track the assets you care about most.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           GestureDetector(
             onTap: () => context.goNamed(RouteNames.home),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainerHigh,
                 borderRadius: AppRadius.fullRadius,
@@ -433,9 +467,9 @@ class _EmptyStateFooter extends StatelessWidget {
               child: Text(
                 'Explore Market',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -448,33 +482,40 @@ class _EmptyStateFooter extends StatelessWidget {
               color: AppColors.canvasLevel1,
               borderRadius: AppRadius.mdRadius,
               border: Border.all(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.4),
-                  style: BorderStyle.solid,
-                  width: 1),
+                color: AppColors.outlineVariant.withValues(alpha: 0.4),
+                style: BorderStyle.solid,
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
-                const Icon(LucideIcons.packageOpen,
-                    size: 32, color: AppColors.onSurfaceVariant),
+                const Icon(
+                  LucideIcons.packageOpen,
+                  size: 32,
+                  color: AppColors.onSurfaceVariant,
+                ),
                 const SizedBox(height: 10),
                 Text(
                   'No more coins saved',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Discover and track new assets\nto build your portfolio.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 14),
-                const Icon(LucideIcons.plus,
-                    size: 20, color: AppColors.onSurfaceVariant),
+                const Icon(
+                  LucideIcons.plus,
+                  size: 20,
+                  color: AppColors.onSurfaceVariant,
+                ),
               ],
             ),
           ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:crypto_pulse/app/router/route_names.dart';
 import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
 import 'package:crypto_pulse/core/theme/app_spacing.dart';
@@ -41,8 +43,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // ── Header ─────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.containerPadding, 16,
-                    AppSpacing.containerPadding, 0),
+                  AppSpacing.containerPadding,
+                  16,
+                  AppSpacing.containerPadding,
+                  0,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -53,17 +58,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         color: AppColors.surfaceContainerHigh,
                         border: Border.all(color: AppColors.outline, width: 1),
                       ),
-                      child: const Icon(LucideIcons.user,
-                          size: 18, color: AppColors.onSurfaceVariant),
+                      child: const Icon(
+                        LucideIcons.user,
+                        size: 18,
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       'CRYPTO PULSE',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.vibrantCoral,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                          ),
+                        color: AppColors.vibrantCoral,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                     const Spacer(),
                     const SizedBox(width: 36),
@@ -75,40 +83,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               // ── Avatar with cyan ring ──────────────────────────────
               Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 108,
-                    height: 108,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceContainerHigh,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: user != null
-                          ? Text(
-                              user.displayName.substring(0, 1).toUpperCase(),
-                              style: const TextStyle(
-                                color: AppColors.onSurface,
-                                fontSize: 42,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            )
-                          : const Icon(LucideIcons.user,
-                              size: 52, color: AppColors.onSurfaceVariant),
-                    ),
-                  ),
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppColors.cyanHighlight, width: 2.5),
-                    ),
-                  ),
-                ],
-              )
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 108,
+                        height: 108,
+                        decoration: const BoxDecoration(
+                          color: AppColors.surfaceContainerHigh,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: user != null
+                              ? Text(
+                                  user.displayName
+                                      .substring(0, 1)
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppColors.onSurface,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                )
+                              : const Icon(
+                                  LucideIcons.user,
+                                  size: 52,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                        ),
+                      ),
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.cyanHighlight,
+                            width: 2.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                   .animate()
                   .fadeIn(duration: 400.ms)
                   .scale(begin: const Offset(0.9, 0.9)),
@@ -118,9 +133,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // ── Name ───────────────────────────────────────────────
               Text(
                 user?.displayName.toUpperCase() ?? '—',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w900),
               ),
 
               if (user != null) ...[
@@ -128,8 +143,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   user.email,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ],
 
@@ -137,8 +152,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
               // ── Status badge ───────────────────────────────────────
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerHigh,
                   borderRadius: AppRadius.fullRadius,
@@ -160,12 +177,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Text(
                       user != null ? 'SUPABASE CONNECTED' : 'NOT SIGNED IN',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: user != null
-                                ? AppColors.mint
-                                : AppColors.onSurfaceVariant,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
+                        color: user != null
+                            ? AppColors.mint
+                            : AppColors.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
@@ -176,16 +193,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // ── Settings section ───────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerPadding),
+                  horizontal: AppSpacing.containerPadding,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Settings',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -224,7 +241,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         icon: LucideIcons.logIn,
                         label: 'Sign In',
                         color: AppColors.cyanHighlight,
-                        onTap: () {},
+                        onTap: () => context.goNamed(RouteNames.login),
                       ),
                       const SizedBox(height: 10),
                     ],
@@ -255,25 +272,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: AppColors.surfaceContainerHigh,
                               borderRadius: AppRadius.smRadius,
                             ),
-                            child: const Icon(LucideIcons.terminal,
-                                size: 20, color: AppColors.onSurfaceVariant),
+                            child: const Icon(
+                              LucideIcons.terminal,
+                              size: 20,
+                              color: AppColors.onSurfaceVariant,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           Text(
                             'CRYPTO PULSE COMMAND CENTER',
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppColors.onSurfaceVariant,
-                                      letterSpacing: 0.8,
-                                    ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  letterSpacing: 0.8,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Build 1.0.0 • High-Contrast Edition',
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppColors.outlineVariant,
-                                    ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(color: AppColors.outlineVariant),
                           ),
                         ],
                       ),
@@ -331,15 +349,18 @@ class _SettingsRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                Text(subtitle,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        )),
+                Text(
+                  label,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -387,10 +408,10 @@ class _ActionRow extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: color, fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

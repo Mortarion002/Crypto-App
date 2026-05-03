@@ -25,8 +25,10 @@ class InsightsScreen extends ConsumerWidget {
           data: (insights) => _InsightsBody(insights: insights),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
-            child: Text('Error loading insights.',
-                style: TextStyle(color: AppColors.vibrantCoral)),
+            child: Text(
+              'Error loading insights.',
+              style: TextStyle(color: AppColors.vibrantCoral),
+            ),
           ),
         ),
       ),
@@ -46,8 +48,14 @@ class _InsightsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.containerPadding, 16, AppSpacing.containerPadding, 0),
-            child: _InsightsHeader(),
+              AppSpacing.containerPadding,
+              16,
+              AppSpacing.containerPadding,
+              0,
+            ),
+            child: _InsightsHeader(
+              onSearch: () => context.goNamed(RouteNames.watchlist),
+            ),
           ),
         ),
 
@@ -55,15 +63,19 @@ class _InsightsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.containerPadding, 20, AppSpacing.containerPadding, 0),
+              AppSpacing.containerPadding,
+              20,
+              AppSpacing.containerPadding,
+              0,
+            ),
             child: Text(
               'INSIGHTS',
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    color: AppColors.deepPurple,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1,
-                    height: 0.9,
-                  ),
+                color: AppColors.deepPurple,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+                height: 0.9,
+              ),
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
           ),
         ),
@@ -74,7 +86,8 @@ class _InsightsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerPadding),
+              horizontal: AppSpacing.containerPadding,
+            ),
             child: _MarketMoodCard(insights: insights),
           ),
         ),
@@ -85,7 +98,8 @@ class _InsightsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerPadding),
+              horizontal: AppSpacing.containerPadding,
+            ),
             child: _VolatilityCard(insights: insights),
           ),
         ),
@@ -96,7 +110,8 @@ class _InsightsBody extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerPadding),
+              horizontal: AppSpacing.containerPadding,
+            ),
             child: _InsightProtocolCard(insights: insights),
           ),
         ),
@@ -108,7 +123,8 @@ class _InsightsBody extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.containerPadding),
+                horizontal: AppSpacing.containerPadding,
+              ),
               child: _SectionHeader(
                 icon: LucideIcons.trendingUp,
                 label: 'Top Gainers',
@@ -119,7 +135,8 @@ class _InsightsBody extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 12)),
           SliverPadding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerPadding),
+              horizontal: AppSpacing.containerPadding,
+            ),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) => _MoverTile(
@@ -138,7 +155,8 @@ class _InsightsBody extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.containerPadding),
+                horizontal: AppSpacing.containerPadding,
+              ),
               child: _SectionHeader(
                 icon: LucideIcons.trendingDown,
                 label: 'Top Losers',
@@ -149,7 +167,8 @@ class _InsightsBody extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 12)),
           SliverPadding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.containerPadding),
+              horizontal: AppSpacing.containerPadding,
+            ),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) => _MoverTile(
@@ -170,6 +189,10 @@ class _InsightsBody extends StatelessWidget {
 
 // ── Header ───────────────────────────────────────────────────────────────────
 class _InsightsHeader extends StatelessWidget {
+  final VoidCallback onSearch;
+
+  const _InsightsHeader({required this.onSearch});
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -182,23 +205,26 @@ class _InsightsHeader extends StatelessWidget {
             color: AppColors.surfaceContainerHigh,
             border: Border.all(color: AppColors.outline, width: 1),
           ),
-          child: const Icon(LucideIcons.user,
-              size: 18, color: AppColors.onSurfaceVariant),
+          child: const Icon(
+            LucideIcons.user,
+            size: 18,
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
         const Spacer(),
         Text(
           'CRYPTO PULSE',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.vibrantCoral,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
+            color: AppColors.vibrantCoral,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
+          ),
         ),
         const Spacer(),
         IconButton(
           icon: const Icon(LucideIcons.search, size: 20),
           color: AppColors.onSurfaceVariant,
-          onPressed: () {},
+          onPressed: onSearch,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -230,8 +256,7 @@ class _MarketMoodCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.canvasLevel1,
         borderRadius: AppRadius.lgRadius,
-        border: Border.all(
-            color: moodColor.withValues(alpha: 0.2), width: 1),
+        border: Border.all(color: moodColor.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,14 +266,16 @@ class _MarketMoodCard extends StatelessWidget {
             children: [
               Text(
                 'Market Mood',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               // LIVE badge
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainerHigh,
                   borderRadius: AppRadius.fullRadius,
@@ -268,10 +295,10 @@ class _MarketMoodCard extends StatelessWidget {
                     Text(
                       'LIVE',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.onSurface,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.8,
-                          ),
+                        color: AppColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
                     ),
                   ],
                 ),
@@ -282,18 +309,18 @@ class _MarketMoodCard extends StatelessWidget {
           Text(
             insights.marketHeadline,
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: moodColor,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1,
-                  height: 1,
-                ),
+              color: moodColor,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1,
+              height: 1,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             insights.marketSubtext,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ],
       ),
@@ -328,9 +355,9 @@ class _VolatilityCard extends StatelessWidget {
         children: [
           Text(
             'Volatility',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -346,18 +373,17 @@ class _VolatilityCard extends StatelessWidget {
                   children: [
                     Text(
                       insights.volatilityIndex.toStringAsFixed(0),
-                      style:
-                          Theme.of(context).textTheme.displaySmall?.copyWith(
-                                color: AppColors.yellow,
-                                fontWeight: FontWeight.w900,
-                              ),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: AppColors.yellow,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                     Text(
                       'INDEX',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            letterSpacing: 1.2,
-                          ),
+                        color: AppColors.onSurfaceVariant,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ],
                 ),
@@ -366,8 +392,7 @@ class _VolatilityCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: AppColors.yellow.withValues(alpha: 0.15),
               borderRadius: AppRadius.fullRadius,
@@ -375,10 +400,10 @@ class _VolatilityCard extends StatelessWidget {
             child: Text(
               levelLabel.toUpperCase(),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppColors.yellow,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                  ),
+                color: AppColors.yellow,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+              ),
             ),
           ),
         ],
@@ -449,11 +474,7 @@ class _VolatilityGaugePainter extends CustomPainter {
     canvas.drawLine(needleStart, needleEnd, needlePaint);
 
     // Dot at needle base
-    canvas.drawCircle(
-      center,
-      6,
-      Paint()..color = AppColors.deepPurple,
-    );
+    canvas.drawCircle(center, 6, Paint()..color = AppColors.deepPurple);
   }
 
   @override
@@ -473,7 +494,9 @@ class _InsightProtocolCard extends StatelessWidget {
         color: AppColors.canvasLevel1,
         borderRadius: AppRadius.lgRadius,
         border: Border.all(
-            color: AppColors.outlineVariant.withValues(alpha: 0.5), width: 1),
+          color: AppColors.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,16 +509,19 @@ class _InsightProtocolCard extends StatelessWidget {
                   color: AppColors.deepPurple.withValues(alpha: 0.2),
                   borderRadius: AppRadius.smRadius,
                 ),
-                child: const Icon(LucideIcons.bot,
-                    size: 18, color: AppColors.deepPurple),
+                child: const Icon(
+                  LucideIcons.bot,
+                  size: 18,
+                  color: AppColors.deepPurple,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
                 'AI PROTOCOL',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                      letterSpacing: 1.2,
-                    ),
+                  color: AppColors.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                ),
               ),
             ],
           ),
@@ -509,17 +535,23 @@ class _InsightProtocolCard extends StatelessWidget {
             child: Text(
               insights.insightText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurface,
-                    height: 1.5,
-                  ),
+                color: AppColors.onSurface,
+                height: 1.5,
+              ),
             ),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              _ActionPill(label: 'VIEW TOP GAINERS', icon: LucideIcons.trendingUp),
+              _ActionPill(
+                label: 'VIEW TOP GAINERS',
+                icon: LucideIcons.trendingUp,
+              ),
               const SizedBox(width: 10),
-              _ActionPill(label: 'CHECK VOLATILITY', icon: LucideIcons.activity),
+              _ActionPill(
+                label: 'CHECK VOLATILITY',
+                icon: LucideIcons.activity,
+              ),
             ],
           ),
         ],
@@ -547,10 +579,10 @@ class _ActionPill extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
+              color: AppColors.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(width: 4),
           Icon(icon, size: 12, color: AppColors.onSurfaceVariant),
@@ -565,8 +597,11 @@ class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _SectionHeader(
-      {required this.icon, required this.label, required this.color});
+  const _SectionHeader({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -577,9 +612,9 @@ class _SectionHeader extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.onSurface,
-              ),
+            fontWeight: FontWeight.w700,
+            color: AppColors.onSurface,
+          ),
         ),
       ],
     );
@@ -599,8 +634,10 @@ class _MoverTile extends ConsumerWidget {
     final pctSign = isGainer ? '+' : '';
 
     return GestureDetector(
-      onTap: () =>
-          context.pushNamed(RouteNames.coinDetail, pathParameters: {'symbol': coin.symbol}),
+      onTap: () => context.pushNamed(
+        RouteNames.coinDetail,
+        pathParameters: {'symbol': coin.symbol},
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -637,16 +674,15 @@ class _MoverTile extends ConsumerWidget {
                 children: [
                   Text(
                     coin.name,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
                     symbol,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -655,9 +691,9 @@ class _MoverTile extends ConsumerWidget {
             Text(
               '$pctSign${coin.priceChangePercent24h.toStringAsFixed(1)}%',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w800,
-                  ),
+                color: color,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),

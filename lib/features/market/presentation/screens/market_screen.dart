@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
+import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 import 'package:crypto_pulse/features/insights/presentation/controllers/insights_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/controllers/coin_detail_controller.dart';
@@ -43,8 +44,13 @@ class MarketScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final marketState = ref.watch(marketControllerProvider);
     final insightsState = ref.watch(insightsControllerProvider);
+    final user = ref.watch(authControllerProvider).asData?.value;
+    final displayName = (user?.displayName.trim().isNotEmpty ?? false)
+        ? user!.displayName
+        : 'there';
     final btcKlines = ref.watch(
-        coinDetailProvider(CoinDetailParams(symbol: 'BTCUSDT', interval: '1d')));
+      coinDetailProvider(CoinDetailParams(symbol: 'BTCUSDT', interval: '1d')),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -59,8 +65,21 @@ class MarketScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.containerPadding, 16, AppSpacing.containerPadding, 0),
-                  child: _Header(),
+                    AppSpacing.containerPadding,
+                    16,
+                    AppSpacing.containerPadding,
+                    0,
+                  ),
+                  child: _Header(
+                    onSearch: () => context.goNamed(RouteNames.watchlist),
+                    onAlerts: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Volatility alerts appear on the market feed.',
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
@@ -68,7 +87,9 @@ class MarketScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.containerPadding, vertical: 20),
+                    horizontal: AppSpacing.containerPadding,
+                    vertical: 20,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,18 +98,15 @@ class MarketScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hi, Aman!',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineLarge
+                            'Hi, $displayName!',
+                            style: Theme.of(context).textTheme.headlineLarge
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Here is your market pulse.',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.onSurfaceVariant,
-                                ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: AppColors.onSurfaceVariant),
                           ),
                         ],
                       ),
@@ -100,11 +118,12 @@ class MarketScreen extends ConsumerWidget {
 
               // ── Alert card (shown when high volatility) ──────────────
               SliverToBoxAdapter(
-                child: insightsState.whenOrNull(
+                child:
+                    insightsState.whenOrNull(
                       data: (insights) =>
                           insights.volatilityLevel == VolatilityLevel.high
-                              ? _AlertCard(insights: insights)
-                              : const SizedBox.shrink(),
+                          ? _AlertCard(insights: insights)
+                          : const SizedBox.shrink(),
                     ) ??
                     const SizedBox.shrink(),
               ),
@@ -113,28 +132,31 @@ class MarketScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.containerPadding),
+                    horizontal: AppSpacing.containerPadding,
+                  ),
                   child: btcKlines.when(
                     data: (klines) => _MarketPulseCard(klines: klines),
                     loading: () => _shimmerCard(200),
-                    error: (_, __) => _MarketPulseCard(klines: const []),
+                    error: (_, _) => _MarketPulseCard(klines: const []),
                   ),
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sectionMargin)),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: AppSpacing.sectionMargin),
+              ),
 
               // ── Top Movers header ─────────────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerPadding),
+                  horizontal: AppSpacing.containerPadding,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Text(
                     'Top Movers',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
@@ -144,39 +166,39 @@ class MarketScreen extends ConsumerWidget {
               // ── Coin tiles ────────────────────────────────────────────
               SliverPadding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.containerPadding),
+                  horizontal: AppSpacing.containerPadding,
+                ),
                 sliver: marketState.when(
                   data: (coins) => SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == coins.length) {
-                          return const SizedBox(height: 100);
-                        }
-                        return _CoinTile(
-                          coin: coins[index],
-                          accentColor: _coinColor(coins[index].symbol),
-                          onTap: () => context.pushNamed(
-                            RouteNames.coinDetail,
-                            pathParameters: {'symbol': coins[index].symbol},
-                          ),
-                        )
-                            .animate()
-                            .fadeIn(duration: 400.ms, delay: (index * 60).ms)
-                            .slideX(begin: 0.08, end: 0);
-                      },
-                      childCount: coins.length + 1,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      if (index == coins.length) {
+                        return const SizedBox(height: 100);
+                      }
+                      return _CoinTile(
+                            coin: coins[index],
+                            accentColor: _coinColor(coins[index].symbol),
+                            onTap: () => context.pushNamed(
+                              RouteNames.coinDetail,
+                              pathParameters: {'symbol': coins[index].symbol},
+                            ),
+                          )
+                          .animate()
+                          .fadeIn(duration: 400.ms, delay: (index * 60).ms)
+                          .slideX(begin: 0.08, end: 0);
+                    }, childCount: coins.length + 1),
                   ),
                   loading: () => SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (_, __) => _CoinTileSkeleton(),
+                      (_, _) => _CoinTileSkeleton(),
                       childCount: 5,
                     ),
                   ),
-                  error: (e, _) => SliverToBoxAdapter(
+                  error: (_, _) => SliverToBoxAdapter(
                     child: Center(
-                      child: Text('Failed to load market data.',
-                          style: TextStyle(color: AppColors.vibrantCoral)),
+                      child: Text(
+                        'Failed to load market data.',
+                        style: TextStyle(color: AppColors.vibrantCoral),
+                      ),
                     ),
                   ),
                 ),
@@ -189,18 +211,25 @@ class MarketScreen extends ConsumerWidget {
   }
 
   Widget _shimmerCard(double height) => Shimmer.fromColors(
-        baseColor: AppColors.canvasLevel1,
-        highlightColor: AppColors.surfaceBright,
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-              color: Colors.white, borderRadius: AppRadius.lgRadius),
-        ),
-      );
+    baseColor: AppColors.canvasLevel1,
+    highlightColor: AppColors.surfaceBright,
+    child: Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.lgRadius,
+      ),
+    ),
+  );
 }
 
 // ── Header ──────────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
+  final VoidCallback onSearch;
+  final VoidCallback onAlerts;
+
+  const _Header({required this.onSearch, required this.onAlerts});
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -214,22 +243,26 @@ class _Header extends StatelessWidget {
             color: AppColors.surfaceContainerHigh,
             border: Border.all(color: AppColors.outline, width: 1),
           ),
-          child: const Icon(LucideIcons.user, size: 18, color: AppColors.onSurfaceVariant),
+          child: const Icon(
+            LucideIcons.user,
+            size: 18,
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
         const Spacer(),
         Text(
           'CRYPTO PULSE',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.vibrantCoral,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
+            color: AppColors.vibrantCoral,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
+          ),
         ),
         const Spacer(),
         IconButton(
           icon: const Icon(LucideIcons.search, size: 20),
           color: AppColors.onSurfaceVariant,
-          onPressed: () {},
+          onPressed: onSearch,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -237,7 +270,7 @@ class _Header extends StatelessWidget {
         IconButton(
           icon: const Icon(LucideIcons.bell, size: 20),
           color: AppColors.onSurfaceVariant,
-          onPressed: () {},
+          onPressed: onAlerts,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -262,13 +295,16 @@ class _MarketSelector extends StatelessWidget {
           Text(
             'Crypto Market',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(width: 4),
-          const Icon(LucideIcons.chevronDown,
-              size: 14, color: AppColors.onSurfaceVariant),
+          const Icon(
+            LucideIcons.chevronDown,
+            size: 14,
+            color: AppColors.onSurfaceVariant,
+          ),
         ],
       ),
     );
@@ -284,13 +320,20 @@ class _AlertCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.containerPadding, 0, AppSpacing.containerPadding, 16),
+        AppSpacing.containerPadding,
+        0,
+        AppSpacing.containerPadding,
+        16,
+      ),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surfaceContainer,
           borderRadius: AppRadius.mdRadius,
-          border: Border.all(color: AppColors.yellow.withValues(alpha: 0.5), width: 1),
+          border: Border.all(
+            color: AppColors.yellow.withValues(alpha: 0.5),
+            width: 1,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,8 +344,11 @@ class _AlertCard extends StatelessWidget {
                 color: AppColors.yellow.withValues(alpha: 0.15),
                 borderRadius: AppRadius.smRadius,
               ),
-              child: const Icon(LucideIcons.triangleAlert,
-                  size: 18, color: AppColors.yellow),
+              child: const Icon(
+                LucideIcons.triangleAlert,
+                size: 18,
+                color: AppColors.yellow,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -312,17 +358,17 @@ class _AlertCard extends StatelessWidget {
                   Text(
                     'MARKET SHIFT DETECTED',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: AppColors.yellow,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
-                        ),
+                      color: AppColors.yellow,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     insights.marketSubtext,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -351,16 +397,18 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
   @override
   Widget build(BuildContext context) {
     final insightsState = ref.watch(insightsControllerProvider);
-    final isUp = insightsState.whenOrNull(
+    final isUp =
+        insightsState.whenOrNull(
           data: (i) => i.marketMood == MarketMood.bullish,
         ) ??
         true;
 
-    final changeLabel = insightsState.whenOrNull(
+    final changeLabel =
+        insightsState.whenOrNull(
           data: (i) {
             if (i.topGainers.isNotEmpty) {
-              final pct =
-                  i.topGainers.first.priceChangePercent24h.toStringAsFixed(2);
+              final pct = i.topGainers.first.priceChangePercent24h
+                  .toStringAsFixed(2);
               return '+$pct%';
             }
             return '';
@@ -371,10 +419,10 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
     // Build chart spots from klines
     final spots = widget.klines.isNotEmpty
         ? widget.klines
-            .asMap()
-            .entries
-            .map((e) => FlSpot(e.key.toDouble(), e.value.close))
-            .toList()
+              .asMap()
+              .entries
+              .map((e) => FlSpot(e.key.toDouble(), e.value.close))
+              .toList()
         : [const FlSpot(0, 0), const FlSpot(1, 1)];
 
     double minY = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
@@ -439,10 +487,10 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                     Text(
                       'MARKET PULSE',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          ),
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     // Interval pills
                     Row(
@@ -454,7 +502,9 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                             duration: const Duration(milliseconds: 200),
                             margin: const EdgeInsets.only(left: 6),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: sel
                                   ? Colors.white
@@ -486,11 +536,20 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                       children: [
                         insightsState.when(
                           data: (i) {
-                            final totalVol = i.topGainers.isEmpty && i.topLosers.isEmpty
+                            final totalVol =
+                                i.topGainers.isEmpty && i.topLosers.isEmpty
                                 ? '--'
-                                : NumberFormat.compactCurrency(symbol: '\$').format(
-                                    i.topGainers.fold(0.0, (s, c) => s + c.volume24h) +
-                                        i.topLosers.fold(0.0, (s, c) => s + c.volume24h),
+                                : NumberFormat.compactCurrency(
+                                    symbol: '\$',
+                                  ).format(
+                                    i.topGainers.fold(
+                                          0.0,
+                                          (s, c) => s + c.volume24h,
+                                        ) +
+                                        i.topLosers.fold(
+                                          0.0,
+                                          (s, c) => s + c.volume24h,
+                                        ),
                                   );
                             return Text(
                               totalVol,
@@ -502,12 +561,15 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                               ),
                             );
                           },
-                          loading: () => const Text('--',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800)),
-                          error: (_, __) => const SizedBox.shrink(),
+                          loading: () => const Text(
+                            '--',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          error: (_, _) => const SizedBox.shrink(),
                         ),
                         Text(
                           'Combined Volume',
@@ -522,7 +584,9 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                     if (changeLabel.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isUp
                               ? AppColors.mint.withValues(alpha: 0.25)
@@ -537,14 +601,17 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                                   ? LucideIcons.trendingUp
                                   : LucideIcons.trendingDown,
                               size: 12,
-                              color: isUp ? AppColors.mint : AppColors.vibrantCoral,
+                              color: isUp
+                                  ? AppColors.mint
+                                  : AppColors.vibrantCoral,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               changeLabel,
                               style: TextStyle(
-                                color:
-                                    isUp ? AppColors.mint : AppColors.vibrantCoral,
+                                color: isUp
+                                    ? AppColors.mint
+                                    : AppColors.vibrantCoral,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -579,10 +646,11 @@ class _CoinTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUp = coin.isUp;
     final changeColor = isUp ? AppColors.mint : AppColors.vibrantCoral;
-    final currencyFormat =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final percentFormat =
-        NumberFormat.decimalPatternDigits(decimalDigits: 2);
+    final currencyFormat = NumberFormat.currency(
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    final percentFormat = NumberFormat.decimalPatternDigits(decimalDigits: 2);
 
     return GestureDetector(
       onTap: onTap,
@@ -639,14 +707,14 @@ class _CoinTile extends StatelessWidget {
                   Text(
                     coin.name,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
                     coin.symbol.replaceAll('USDT', ''),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -661,14 +729,16 @@ class _CoinTile extends StatelessWidget {
                   Text(
                     currencyFormat.format(coin.currentPrice),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isUp ? LucideIcons.trendingUp : LucideIcons.trendingDown,
+                        isUp
+                            ? LucideIcons.trendingUp
+                            : LucideIcons.trendingDown,
                         size: 12,
                         color: changeColor,
                       ),
@@ -676,9 +746,9 @@ class _CoinTile extends StatelessWidget {
                       Text(
                         '${isUp ? '+' : ''}${percentFormat.format(coin.priceChangePercent24h)}%',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: changeColor,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: changeColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
