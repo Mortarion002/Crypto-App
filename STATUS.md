@@ -88,7 +88,7 @@ Validation on 2026-05-04:
 
 ### Phase 5 - App Polish
 - [x] Fix remaining analyzer info notes.
-- [ ] Wire app icon assets and launcher icon generation.
+- [x] Wire app icon assets and launcher icon generation.
 - [ ] Add visual QA pass on a device/emulator or browser target.
 
 ### Phase 6 - Publish Rhythm
@@ -103,7 +103,7 @@ Validation on 2026-05-04:
 - Profile theme row is intentionally locked to dark because the app only ships a dark theme right now.
 - Watchlist cloud sync intentionally favors local-first UX; remote failures are debug-logged but not surfaced to users yet.
 - Coin Detail now has empty/error states, but the visual treatment can still be polished.
-- App icon is not wired up.
+- App icon is wired for Android, iOS, web, Windows, and macOS.
 
 ---
 
