@@ -37,6 +37,69 @@ Color _coinColor(String symbol) {
   }
 }
 
+// ── Notification data model ──────────────────────────────────────────────────
+class _NotifData {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String body;
+  final String time;
+  final bool isNew;
+
+  const _NotifData({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.body,
+    required this.time,
+    required this.isNew,
+  });
+}
+
+const _kNotifications = [
+  _NotifData(
+    icon: LucideIcons.trendingUp,
+    color: AppColors.mint,
+    title: 'BTC surged +5.2% in 24h',
+    body: 'Bitcoin broke resistance at \$67,000 with high volume.',
+    time: '2m ago',
+    isNew: true,
+  ),
+  _NotifData(
+    icon: LucideIcons.triangleAlert,
+    color: AppColors.yellow,
+    title: 'High volatility detected',
+    body: 'Average market movement exceeds 5% — exercise caution.',
+    time: '15m ago',
+    isNew: true,
+  ),
+  _NotifData(
+    icon: LucideIcons.bell,
+    color: AppColors.cyanHighlight,
+    title: 'SOL added to watchlist',
+    body: 'Solana is now tracked. Current price: \$142.30.',
+    time: '1h ago',
+    isNew: false,
+  ),
+  _NotifData(
+    icon: LucideIcons.trendingUp,
+    color: AppColors.deepPurple,
+    title: 'Market mood: BULLISH',
+    body: 'Gainers now outnumber losers by 2× across tracked coins.',
+    time: '3h ago',
+    isNew: false,
+  ),
+  _NotifData(
+    icon: LucideIcons.trendingDown,
+    color: AppColors.vibrantCoral,
+    title: 'ETH down -3.1% in 24h',
+    body: 'Ethereum continues its correction from the weekly high.',
+    time: '5h ago',
+    isNew: false,
+  ),
+];
+
+// ── Market Screen ─────────────────────────────────────────────────────────────
 class MarketScreen extends ConsumerWidget {
   const MarketScreen({super.key});
 
@@ -71,13 +134,18 @@ class MarketScreen extends ConsumerWidget {
                     0,
                   ),
                   child: _Header(
-                    onSearch: () => context.goNamed(RouteNames.watchlist),
-                    onAlerts: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Volatility alerts appear on the market feed.',
-                        ),
-                      ),
+                    unreadCount: 2,
+                    onSearch: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const _SearchSheet(),
+                    ),
+                    onAlerts: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: false,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const _NotificationsSheet(),
                     ),
                   ),
                 ),
@@ -223,12 +291,17 @@ class MarketScreen extends ConsumerWidget {
   );
 }
 
-// ── Header ──────────────────────────────────────────────────────────────────
+// ── Header ───────────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
   final VoidCallback onSearch;
   final VoidCallback onAlerts;
+  final int unreadCount;
 
-  const _Header({required this.onSearch, required this.onAlerts});
+  const _Header({
+    required this.onSearch,
+    required this.onAlerts,
+    this.unreadCount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -259,6 +332,7 @@ class _Header extends StatelessWidget {
           ),
         ),
         const Spacer(),
+        // Search
         IconButton(
           icon: const Icon(LucideIcons.search, size: 20),
           color: AppColors.onSurfaceVariant,
@@ -267,19 +341,42 @@ class _Header extends StatelessWidget {
           constraints: const BoxConstraints(),
         ),
         const SizedBox(width: 12),
-        IconButton(
-          icon: const Icon(LucideIcons.bell, size: 20),
-          color: AppColors.onSurfaceVariant,
-          onPressed: onAlerts,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
+        // Bell with unread badge
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(LucideIcons.bell, size: 20),
+              color: AppColors.onSurfaceVariant,
+              onPressed: onAlerts,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            if (unreadCount > 0)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    color: AppColors.vibrantCoral,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.background,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
   }
 }
 
-// ── Market selector pill ─────────────────────────────────────────────────────
+// ── Market selector pill ──────────────────────────────────────────────────────
 class _MarketSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -311,7 +408,7 @@ class _MarketSelector extends StatelessWidget {
   }
 }
 
-// ── Alert card ───────────────────────────────────────────────────────────────
+// ── Alert card ────────────────────────────────────────────────────────────────
 class _AlertCard extends StatelessWidget {
   final MarketInsights insights;
   const _AlertCard({required this.insights});
@@ -380,7 +477,7 @@ class _AlertCard extends StatelessWidget {
   }
 }
 
-// ── Market Pulse card ────────────────────────────────────────────────────────
+// ── Market Pulse card ─────────────────────────────────────────────────────────
 class _MarketPulseCard extends ConsumerStatefulWidget {
   final List<KlinePoint> klines;
   const _MarketPulseCard({required this.klines});
@@ -416,7 +513,6 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
         ) ??
         '';
 
-    // Build chart spots from klines
     final spots = widget.klines.isNotEmpty
         ? widget.klines
               .asMap()
@@ -444,7 +540,6 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
       ),
       child: Stack(
         children: [
-          // Chart background
           if (widget.klines.isNotEmpty)
             Positioned.fill(
               child: ClipRRect(
@@ -474,8 +569,6 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                 ),
               ),
             ),
-
-          // Content overlay
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -492,7 +585,6 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
                         letterSpacing: 1.2,
                       ),
                     ),
-                    // Interval pills
                     Row(
                       children: _intervals.map((iv) {
                         final sel = iv == _interval;
@@ -630,7 +722,7 @@ class _MarketPulseCardState extends ConsumerState<_MarketPulseCard> {
   }
 }
 
-// ── Coin tile ────────────────────────────────────────────────────────────────
+// ── Coin tile ─────────────────────────────────────────────────────────────────
 class _CoinTile extends StatelessWidget {
   final Coin coin;
   final Color accentColor;
@@ -674,9 +766,7 @@ class _CoinTile extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(width: 14),
-
             // Coin icon
             Container(
               width: 44,
@@ -696,9 +786,7 @@ class _CoinTile extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(width: 12),
-
             // Name + ticker
             Expanded(
               child: Column(
@@ -719,7 +807,6 @@ class _CoinTile extends StatelessWidget {
                 ],
               ),
             ),
-
             // Price + change
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -762,7 +849,7 @@ class _CoinTile extends StatelessWidget {
   }
 }
 
-// ── Skeletons ────────────────────────────────────────────────────────────────
+// ── Coin tile skeleton ────────────────────────────────────────────────────────
 class _CoinTileSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -776,6 +863,347 @@ class _CoinTileSkeleton extends StatelessWidget {
           color: Colors.white,
           borderRadius: AppRadius.mdRadius,
         ),
+      ),
+    );
+  }
+}
+
+// ── Search Sheet ──────────────────────────────────────────────────────────────
+class _SearchSheet extends ConsumerStatefulWidget {
+  const _SearchSheet();
+
+  @override
+  ConsumerState<_SearchSheet> createState() => _SearchSheetState();
+}
+
+class _SearchSheetState extends ConsumerState<_SearchSheet> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final coins = ref.watch(marketControllerProvider).asData?.value ?? [];
+    final q = _query.trim().toLowerCase();
+    final filtered = q.isEmpty
+        ? coins
+        : coins
+              .where(
+                (c) =>
+                    c.symbol.toLowerCase().contains(q) ||
+                    c.name.toLowerCase().contains(q),
+              )
+              .toList();
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.87,
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Search row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    onChanged: (v) => setState(() => _query = v),
+                    style: const TextStyle(
+                      color: AppColors.onSurface,
+                      fontSize: 15,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Search coins...',
+                      hintStyle: const TextStyle(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 15,
+                      ),
+                      prefixIcon: const Icon(
+                        LucideIcons.search,
+                        size: 18,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.canvasLevel1,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(32),
+                        borderSide: BorderSide(
+                          color: AppColors.vibrantCoral.withValues(alpha: 0.5),
+                          width: 1,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: AppColors.vibrantCoral,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Result count
+          if (q.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                '${filtered.length} result${filtered.length == 1 ? '' : 's'}',
+                style: const TextStyle(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+
+          // List
+          Expanded(
+            child: filtered.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          LucideIcons.search,
+                          size: 44,
+                          color: AppColors.outlineVariant,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No coins match "$_query"',
+                          style: const TextStyle(
+                            color: AppColors.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final coin = filtered[index];
+                      return _CoinTile(
+                        coin: coin,
+                        accentColor: _coinColor(coin.symbol),
+                        onTap: () {
+                          final router = GoRouter.of(context);
+                          Navigator.pop(context);
+                          router.pushNamed(
+                            RouteNames.coinDetail,
+                            pathParameters: {'symbol': coin.symbol},
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Notifications Sheet ───────────────────────────────────────────────────────
+class _NotificationsSheet extends StatelessWidget {
+  const _NotificationsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 16),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Title row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'NOTIFICATIONS',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.vibrantCoral.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  child: Text(
+                    '2 NEW',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.vibrantCoral,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Notification rows
+          ..._kNotifications.map((item) => _NotifRow(item: item)),
+
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotifRow extends StatelessWidget {
+  final _NotifData item;
+  const _NotifRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.outlineVariant.withValues(alpha: 0.4),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon bubble
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: item.color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(item.icon, size: 16, color: item.color),
+          ),
+          const SizedBox(width: 14),
+          // Text content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                    ),
+                    if (item.isNew)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.vibrantCoral,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  item.body,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item.time,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.outline,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
