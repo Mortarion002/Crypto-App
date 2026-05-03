@@ -11,6 +11,7 @@ Crypto Pulse is a Flutter mobile crypto sentiment dashboard using Binance public
 Validation on 2026-05-04:
 - `flutter test` passes: 66 tests.
 - `dart analyze` has no issues.
+- `flutter build apk --debug --dart-define-from-file=.env.json` succeeds.
 - Git remote: `origin` -> `https://github.com/Mortarion002/Crypto-App.git`.
 
 ---
@@ -89,6 +90,7 @@ Validation on 2026-05-04:
 ### Phase 5 - App Polish
 - [x] Fix remaining analyzer info notes.
 - [x] Wire app icon assets and launcher icon generation.
+- [x] Replace the default black/white native launch splash with the app background color.
 - [ ] Add visual QA pass on a device/emulator or browser target.
 
 ### Phase 6 - Publish Rhythm
@@ -104,6 +106,7 @@ Validation on 2026-05-04:
 - Watchlist cloud sync intentionally favors local-first UX; remote failures are debug-logged but not surfaced to users yet.
 - Coin Detail now has empty/error states, but the visual treatment can still be polished.
 - App icon is wired for Android, iOS, web, Windows, and macOS.
+- Native launch surfaces are plain `#1D100E` while Flutter starts.
 
 ---
 
