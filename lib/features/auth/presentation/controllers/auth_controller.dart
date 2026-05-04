@@ -68,6 +68,13 @@ class AuthController extends AsyncNotifier<AppUser?> {
     if (msg.contains('Invalid login credentials')) {
       return 'Invalid email or password.';
     }
+    if (msg.contains('Email not confirmed')) {
+      return 'Please confirm your email before signing in.';
+    }
+    if (msg.contains('over_email_send_rate_limit') ||
+        msg.contains('email rate limit')) {
+      return 'Too many signup attempts. Please wait a few minutes and try again.';
+    }
     if (msg.contains('User already registered')) {
       return 'An account with this email already exists.';
     }

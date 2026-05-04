@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +9,8 @@ import 'package:crypto_pulse/app/router/app_router.dart';
 import 'package:crypto_pulse/core/providers/shared_prefs_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   assert(
     Env.supabaseAnonKey.isNotEmpty,
@@ -21,6 +23,8 @@ void main() async {
   );
 
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  FlutterNativeSplash.remove();
 
   runApp(
     ProviderScope(

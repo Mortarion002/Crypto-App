@@ -27,9 +27,28 @@ class SupabaseAuthRepository implements AuthRepository {
       password: password,
       data: name != null && name.isNotEmpty ? {'name': name} : null,
     );
-    return SignUpResult(
-      signedIn: response.session != null || _client.auth.currentSession != null,
-    );
+
+    // Session granted immediately — email confirmation is disabled on this project.
+    if (response.session != null || _client.auth.currentSession != null) {
+      return const SignUpResult(signedIn: true);
+    }
+
+    // No session yet. Try signing in immediately — this succeeds when the
+    // Supabase project does not require email confirmation but signUp still
+    // returns a null session (e.g. certain auth config states).
+    try {
+      await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      if (_client.auth.currentSession != null) {
+        return const SignUpResult(signedIn: true);
+      }
+    } catch (_) {
+      // Sign-in failed — email confirmation is required. Fall through.
+    }
+
+    return const SignUpResult(signedIn: false);
   }
 
   @override
