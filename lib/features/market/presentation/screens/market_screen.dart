@@ -11,6 +11,7 @@ import 'package:crypto_pulse/features/auth/presentation/controllers/auth_control
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 import 'package:crypto_pulse/features/insights/presentation/controllers/insights_controller.dart';
 import 'package:crypto_pulse/features/coin_detail/presentation/controllers/coin_detail_controller.dart';
+import 'package:crypto_pulse/features/market/presentation/widgets/notifications_sheet.dart';
 import 'package:crypto_pulse/features/market/domain/entities/coin.dart';
 import 'package:crypto_pulse/features/coin_detail/domain/entities/kline_point.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
@@ -76,67 +77,12 @@ enum _MarketFilter {
   }
 }
 
-// ── Notification data model ──────────────────────────────────────────────────
-class _NotifData {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String body;
-  final String time;
-  final bool isNew;
+// Removed _NotifData and _kNotifications (now in notifications_sheet.dart)
 
-  const _NotifData({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.body,
-    required this.time,
-    required this.isNew,
-  });
-}
 
-const _kNotifications = [
-  _NotifData(
-    icon: LucideIcons.trendingUp,
-    color: AppColors.mint,
-    title: 'BTC surged +5.2% in 24h',
-    body: 'Bitcoin broke resistance at \$67,000 with high volume.',
-    time: '2m ago',
-    isNew: true,
-  ),
-  _NotifData(
-    icon: LucideIcons.triangleAlert,
-    color: AppColors.yellow,
-    title: 'High volatility detected',
-    body: 'Average market movement exceeds 5% — exercise caution.',
-    time: '15m ago',
-    isNew: true,
-  ),
-  _NotifData(
-    icon: LucideIcons.bell,
-    color: AppColors.cyanHighlight,
-    title: 'SOL added to watchlist',
-    body: 'Solana is now tracked. Current price: \$142.30.',
-    time: '1h ago',
-    isNew: false,
-  ),
-  _NotifData(
-    icon: LucideIcons.trendingUp,
-    color: AppColors.deepPurple,
-    title: 'Market mood: BULLISH',
-    body: 'Gainers now outnumber losers by 2× across tracked coins.',
-    time: '3h ago',
-    isNew: false,
-  ),
-  _NotifData(
-    icon: LucideIcons.trendingDown,
-    color: AppColors.vibrantCoral,
-    title: 'ETH down -3.1% in 24h',
-    body: 'Ethereum continues its correction from the weekly high.',
-    time: '5h ago',
-    isNew: false,
-  ),
-];
+
+
+
 
 // ── Market Screen ─────────────────────────────────────────────────────────────
 class MarketScreen extends ConsumerStatefulWidget {
@@ -205,7 +151,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       context: context,
                       isScrollControlled: false,
                       backgroundColor: Colors.transparent,
-                      builder: (_) => const _NotificationsSheet(),
+                      builder: (_) => const NotificationsSheet(),
                     ),
                   ),
                 ),
@@ -1335,170 +1281,4 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
   }
 }
 
-// ── Notifications Sheet ───────────────────────────────────────────────────────
-class _NotificationsSheet extends StatelessWidget {
-  const _NotificationsSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.78,
-      ),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 16),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            // Title row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'NOTIFICATIONS',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: AppColors.onSurface,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.vibrantCoral.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: Text(
-                      '2 NEW',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.vibrantCoral,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Scrollable notification rows
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ..._kNotifications.map((item) => _NotifRow(item: item)),
-                    SizedBox(
-                      height: MediaQuery.of(context).padding.bottom + 16,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NotifRow extends StatelessWidget {
-  final _NotifData item;
-  const _NotifRow({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: AppColors.outlineVariant.withValues(alpha: 0.4),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon bubble
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: item.color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(item.icon, size: 16, color: item.color),
-          ),
-          const SizedBox(width: 14),
-          // Text content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.onSurface,
-                        ),
-                      ),
-                    ),
-                    if (item.isNew)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.vibrantCoral,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  item.body,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.time,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.outline,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// NotificationsSheet and NotifRow moved to notifications_sheet.dart

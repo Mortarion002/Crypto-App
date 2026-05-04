@@ -8,6 +8,7 @@ import 'package:crypto_pulse/features/auth/presentation/controllers/auth_control
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/notifications_settings_screen.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/documentation_screen.dart';
+import 'package:crypto_pulse/features/market/presentation/widgets/notifications_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -411,7 +412,37 @@ class _TopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        const SizedBox(width: 36),
+        // Bell with unread badge
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(LucideIcons.bell, size: 20),
+              color: AppColors.onSurfaceVariant,
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: false,
+                backgroundColor: Colors.transparent,
+                builder: (_) => const NotificationsSheet(),
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            Positioned(
+              right: -2,
+              top: -2,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.vibrantCoral,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.background, width: 1.5),
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
