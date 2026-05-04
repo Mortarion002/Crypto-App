@@ -164,7 +164,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsGroup(
               children: [
                 _RowTile(
-                  icon: LucideIcons.barChart2,
+                  icon: LucideIcons.barChart,
                   iconColor: AppColors.vibrantCoral,
                   title: 'Default Currency',
                   subtitle: 'USD – US Dollar',

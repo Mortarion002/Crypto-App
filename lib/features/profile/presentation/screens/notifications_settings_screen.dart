@@ -55,7 +55,7 @@ class _NotificationsSettingsScreenState
 
   final List<_AlertItem> _alerts = [
     _AlertItem(
-      icon: LucideIcons.alertCircle,
+      icon: LucideIcons.circleAlert,
       color: const Color(0xFFFF5D52),
       title: 'Price Alerts',
       subtitle: 'Sudden spikes and crashes',
