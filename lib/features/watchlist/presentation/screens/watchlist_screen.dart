@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
+import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:crypto_pulse/features/watchlist/presentation/controllers/watchlist_controller.dart';
 import 'package:crypto_pulse/features/watchlist/data/sparkline_provider.dart';
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
@@ -54,7 +55,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ─────────────────────────────────────────────────
+            // ── Header ──────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.containerPadding,
@@ -62,42 +63,60 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                 AppSpacing.containerPadding,
                 0,
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.surfaceContainerHigh,
-                      border: Border.all(color: AppColors.outline, width: 1),
-                    ),
-                    child: const Icon(
-                      LucideIcons.user,
-                      size: 18,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'WATCHLIST',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.vibrantCoral,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(LucideIcons.search, size: 20),
-                    color: AppColors.onSurfaceVariant,
-                    onPressed: _searchFocusNode.requestFocus,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
+              child: Builder(
+                builder: (context) {
+                  final user = ref.watch(authControllerProvider).asData?.value;
+                  final displayName = (user?.displayName.trim().isNotEmpty ?? false)
+                      ? user!.displayName
+                      : 'U';
+                  final firstLetter = displayName[0].toUpperCase();
+                  return Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.vibrantCoral.withValues(alpha: 0.2),
+                          border: Border.all(
+                            color: AppColors.vibrantCoral.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            firstLetter,
+                            style: const TextStyle(
+                              color: AppColors.vibrantCoral,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'CRYPTO PULSE',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.vibrantCoral,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(LucideIcons.search, size: 20),
+                        color: AppColors.onSurfaceVariant,
+                        onPressed: _searchFocusNode.requestFocus,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
+
 
             // ── Search bar ─────────────────────────────────────────────
             Padding(

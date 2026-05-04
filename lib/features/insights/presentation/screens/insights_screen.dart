@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:crypto_pulse/app/router/route_names.dart';
+import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:crypto_pulse/features/insights/presentation/controllers/insights_controller.dart';
 import 'package:crypto_pulse/features/market/domain/entities/coin.dart';
 import 'package:crypto_pulse/core/theme/app_colors.dart';
@@ -188,13 +189,19 @@ class _InsightsBody extends StatelessWidget {
 }
 
 // ── Header ───────────────────────────────────────────────────────────────────
-class _InsightsHeader extends StatelessWidget {
+class _InsightsHeader extends ConsumerWidget {
   final VoidCallback onSearch;
 
   const _InsightsHeader({required this.onSearch});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).asData?.value;
+    final displayName = (user?.displayName.trim().isNotEmpty ?? false)
+        ? user!.displayName
+        : 'U';
+    final firstLetter = displayName[0].toUpperCase();
+
     return Row(
       children: [
         Container(
@@ -202,13 +209,18 @@ class _InsightsHeader extends StatelessWidget {
           height: 36,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.surfaceContainerHigh,
-            border: Border.all(color: AppColors.outline, width: 1),
+            color: AppColors.vibrantCoral.withValues(alpha: 0.2),
+            border: Border.all(color: AppColors.vibrantCoral.withValues(alpha: 0.5), width: 1),
           ),
-          child: const Icon(
-            LucideIcons.user,
-            size: 18,
-            color: AppColors.onSurfaceVariant,
+          child: Center(
+            child: Text(
+              firstLetter,
+              style: const TextStyle(
+                color: AppColors.vibrantCoral,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+              ),
+            ),
           ),
         ),
         const Spacer(),

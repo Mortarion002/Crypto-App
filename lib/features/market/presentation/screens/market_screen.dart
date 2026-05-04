@@ -424,7 +424,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 }
 
 // ── Header ───────────────────────────────────────────────────────────────────
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   final VoidCallback onSearch;
   final VoidCallback onAlerts;
   final int unreadCount;
@@ -436,9 +436,37 @@ class _Header extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).asData?.value;
+    final displayName = (user?.displayName.trim().isNotEmpty ?? false)
+        ? user!.displayName
+        : 'U';
+    final firstLetter = displayName[0].toUpperCase();
+
     return Row(
       children: [
+        // Profile avatar with first letter
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.vibrantCoral.withValues(alpha: 0.2),
+            border: Border.all(color: AppColors.vibrantCoral.withValues(alpha: 0.5), width: 1),
+          ),
+          child: Center(
+            child: Text(
+              firstLetter,
+              style: const TextStyle(
+                color: AppColors.vibrantCoral,
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+              ),
+            ),
+          ),
+        ),
+        const Spacer(),
+        // Centered CRYPTO PULSE
         Text(
           'CRYPTO PULSE',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
