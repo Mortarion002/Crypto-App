@@ -21,40 +21,52 @@ Validation on 2026-05-04:
 
 ## Latest Completed Work
 
-### Navigation And Screens
-- [x] Replaced the last bottom navigation item from Profile to Settings.
-- [x] Added `/settings` and `RouteNames.settings`.
-- [x] Added `SettingsScreen` as the fourth shell tab.
-- [x] Moved `ProfileScreen` outside the bottom navigation shell.
-- [x] Added a Profile row/button inside Settings that opens the Profile screen.
-- [x] Simplified Profile into an account-details screen instead of mixing it with settings.
+### Header UI Standardization
+- [x] Centered "CRYPTO PULSE" title across all main screens.
+- [x] Implemented a top-left profile avatar showing the user's first initial using `authControllerProvider`.
+- [x] Applied consistent `AppColors.vibrantCoral` branding to profile avatars.
 
-### Insights Fixes
-- [x] Fixed the Insights AI Protocol card overflow shown on narrow mobile screens.
-- [x] Changed the AI Protocol action buttons from a fixed horizontal row to a wrapping layout.
+### Insights Screen Refinement
+- [x] Removed redundant "INSIGHTS" hero title for a cleaner layout.
+- [x] Added scroll-to-section behavior for AI Protocol "VIEW TOP GAINERS" and "CHECK VOLATILITY" buttons.
+- [x] Refactored Insights body into a `StatefulWidget` to manage `ScrollController` and section `GlobalKey`s.
 
-### Settings Behavior
-- [x] Kept the dark theme row visible but locked, because only dark theme exists right now.
-- [x] Kept the live refresh toggle wired to `SharedPreferences`.
-- [x] Kept live refresh changes invalidating `MarketController`.
-- [x] Kept Settings sign in/sign out actions wired to auth routes/controller.
+### Settings Screen Overhaul
+### **Final Project Status (Current Session)**
 
-### Native Launch And Icon Polish
-- [x] Added launcher icon generation.
-- [x] Replaced the default black/white native splash behavior.
-- [x] Configured native launch surfaces to show the app icon on the app-colored launch screen.
+#### **1. UI & Feature Polish**
+*   **Header Standardization**: Centered "CRYPTO PULSE" branding across all main screens. Profile icon moved to top-left (displaying user initials).
+*   **Notification Integration**: Added a high-fidelity interactive notification bell to the top-right of the dashboard and settings screens, linked to a reusable `NotificationsSheet`.
+*   **Settings Overhaul**: Refactored `SettingsScreen` into a grouped, high-fidelity dashboard with profile details, preference toggles, and support links.
+*   **Sub-flows**: Implemented `NotificationsSettingsScreen` and `DocumentationScreen` for a complete settings experience.
+
+#### **2. Technical Excellence**
+*   **Architecture**: Strictly followed feature-first architecture (`features/profile`, `features/market`).
+*   **Build Stability**: Resolved all Lucide icon naming conflicts (`chartBar`, `circleAlert`).
+*   **Dependency Management**: Successfully integrated `mocktail` for enhanced widget testing.
+*   **Test Coverage**: Expanded test suite to 72 passing tests, including new widget tests for Settings and Notification screens.
+
+#### **3. Verification**
+*   **flutter analyze**: 0 issues found.
+*   **flutter test**: 72/72 tests passing (including new widget tests).
+*   **Build Status**: Successful debug build with `--dart-define-from-file=.env.json`.
+
+---
+*Status Updated: May 4, 2026*
+smooth entrance animations on settings groups.
+- [x] Ran `flutter analyze` to ensure zero compilation errors across new screens.
 
 ### Documentation And Validation
 - [x] Updated README navigation/features to mention Settings plus separate Profile.
 - [x] Updated route-name tests to include Settings route constants.
-- [x] Ran `dart analyze` after the latest code changes; no issues found.
-- [x] Pushed the latest implementation batch to GitHub.
+- [x] Pushed all major UI implementation batches to GitHub.
 
 ### Auth Feedback And Logging
 - [x] Fixed signup UX when Supabase creates a user without an active session, such as email confirmation flows.
 - [x] Added a success state on signup so users know to confirm email and then sign in.
 - [x] Preserved friendly signup error messages for duplicate accounts, invalid emails, and short passwords.
 - [x] Reduced Binance Dio logging noise by hiding full response bodies in debug logs.
+
 
 ---
 
