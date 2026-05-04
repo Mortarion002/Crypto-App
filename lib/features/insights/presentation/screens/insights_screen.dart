@@ -37,13 +37,40 @@ class InsightsScreen extends ConsumerWidget {
   }
 }
 
-class _InsightsBody extends StatelessWidget {
+class _InsightsBody extends StatefulWidget {
   final MarketInsights insights;
   const _InsightsBody({required this.insights});
 
   @override
+  State<_InsightsBody> createState() => _InsightsBodyState();
+}
+
+class _InsightsBodyState extends State<_InsightsBody> {
+  final _scrollController = ScrollController();
+  final _volatilityKey = GlobalKey();
+  final _gainersKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      alignment: 0.1,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
         // ── Header ──────────────────────────────────────────────────────
         SliverToBoxAdapter(
@@ -60,28 +87,7 @@ class _InsightsBody extends StatelessWidget {
           ),
         ),
 
-        // ── "INSIGHTS" large title ───────────────────────────────────────
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.containerPadding,
-              20,
-              AppSpacing.containerPadding,
-              0,
-            ),
-            child: Text(
-              'INSIGHTS',
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                color: AppColors.deepPurple,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-                height: 0.9,
-              ),
-            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
-          ),
-        ),
-
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
         // ── Market Mood card ─────────────────────────────────────────────
         SliverToBoxAdapter(
@@ -89,7 +95,7 @@ class _InsightsBody extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.containerPadding,
             ),
-            child: _MarketMoodCard(insights: insights),
+            child: _MarketMoodCard(insights: widget.insights),
           ),
         ),
 
@@ -97,11 +103,12 @@ class _InsightsBody extends StatelessWidget {
 
         // ── Volatility gauge ─────────────────────────────────────────────
         SliverToBoxAdapter(
+          key: _volatilityKey,
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.containerPadding,
             ),
-            child: _VolatilityCard(insights: insights),
+            child: _VolatilityCard(insights: widget.insights),
           ),
         ),
 
@@ -113,15 +120,20 @@ class _InsightsBody extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.containerPadding,
             ),
-            child: _InsightProtocolCard(insights: insights),
+            child: _InsightProtocolCard(
+              insights: widget.insights,
+              onViewGainers: () => _scrollToKey(_gainersKey),
+              onCheckVolatility: () => _scrollToKey(_volatilityKey),
+            ),
           ),
         ),
 
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
         // ── Top Gainers ──────────────────────────────────────────────────
-        if (insights.topGainers.isNotEmpty) ...[
+        if (widget.insights.topGainers.isNotEmpty) ...[
           SliverToBoxAdapter(
+            key: _gainersKey,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.containerPadding,
@@ -141,10 +153,10 @@ class _InsightsBody extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) => _MoverTile(
-                  coin: insights.topGainers[i],
+                  coin: widget.insights.topGainers[i],
                   isGainer: true,
                 ).animate().fadeIn(delay: (i * 80).ms),
-                childCount: insights.topGainers.length,
+                childCount: widget.insights.topGainers.length,
               ),
             ),
           ),
@@ -152,7 +164,7 @@ class _InsightsBody extends StatelessWidget {
         ],
 
         // ── Top Losers ───────────────────────────────────────────────────
-        if (insights.topLosers.isNotEmpty) ...[
+        if (widget.insights.topLosers.isNotEmpty) ...[
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -173,10 +185,10 @@ class _InsightsBody extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, i) => _MoverTile(
-                  coin: insights.topLosers[i],
+                  coin: widget.insights.topLosers[i],
                   isGainer: false,
                 ).animate().fadeIn(delay: (i * 80).ms),
-                childCount: insights.topLosers.length,
+                childCount: widget.insights.topLosers.length,
               ),
             ),
           ),
@@ -496,7 +508,14 @@ class _VolatilityGaugePainter extends CustomPainter {
 // ── AI Protocol card ─────────────────────────────────────────────────────────
 class _InsightProtocolCard extends StatelessWidget {
   final MarketInsights insights;
-  const _InsightProtocolCard({required this.insights});
+  final VoidCallback onViewGainers;
+  final VoidCallback onCheckVolatility;
+
+  const _InsightProtocolCard({
+    required this.insights,
+    required this.onViewGainers,
+    required this.onCheckVolatility,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -556,14 +575,18 @@ class _InsightProtocolCard extends StatelessWidget {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: const [
+            children: [
               _ActionPill(
                 label: 'VIEW TOP GAINERS',
                 icon: LucideIcons.trendingUp,
+                color: AppColors.mint,
+                onTap: onViewGainers,
               ),
               _ActionPill(
                 label: 'CHECK VOLATILITY',
                 icon: LucideIcons.activity,
+                color: AppColors.yellow,
+                onTap: onCheckVolatility,
               ),
             ],
           ),
@@ -576,30 +599,43 @@ class _InsightProtocolCard extends StatelessWidget {
 class _ActionPill extends StatelessWidget {
   final String label;
   final IconData icon;
-  const _ActionPill({required this.label, required this.icon});
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionPill({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.outlineVariant, width: 1),
-        borderRadius: AppRadius.fullRadius,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+          borderRadius: AppRadius.fullRadius,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Icon(icon, size: 12, color: AppColors.onSurfaceVariant),
-        ],
+          ],
+        ),
       ),
     );
   }
