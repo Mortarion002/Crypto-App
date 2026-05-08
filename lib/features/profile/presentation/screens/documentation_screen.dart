@@ -8,9 +8,9 @@ import 'package:crypto_pulse/core/theme/app_spacing.dart';
 class _DocArticle {
   final String title;
   final String content;
-  bool expanded;
+  bool expanded = false;
 
-  _DocArticle({required this.title, required this.content, this.expanded = false});
+  _DocArticle({required this.title, required this.content});
 }
 
 class _DocSection {
@@ -158,7 +158,11 @@ class _DocumentationScreenState extends State<DocumentationScreen> {
   void initState() {
     super.initState();
     _articleLists = _sections
-        .map((s) => s.articles.map((a) => _DocArticle(title: a.title, content: a.content)).toList())
+        .map(
+          (s) => s.articles
+              .map((a) => _DocArticle(title: a.title, content: a.content))
+              .toList(),
+        )
         .toList();
   }
 
@@ -229,12 +233,12 @@ class _DocumentationScreenState extends State<DocumentationScreen> {
             final filtered = lowerQuery.isEmpty
                 ? articles
                 : articles
-                    .where(
-                      (a) =>
-                          a.title.toLowerCase().contains(lowerQuery) ||
-                          a.content.toLowerCase().contains(lowerQuery),
-                    )
-                    .toList();
+                      .where(
+                        (a) =>
+                            a.title.toLowerCase().contains(lowerQuery) ||
+                            a.content.toLowerCase().contains(lowerQuery),
+                      )
+                      .toList();
 
             if (filtered.isEmpty) return const SizedBox.shrink();
 
@@ -276,7 +280,8 @@ class _DocumentationScreenState extends State<DocumentationScreen> {
                   return _ArticleCard(
                     article: article,
                     query: lowerQuery,
-                    onToggle: () => setState(() => article.expanded = !article.expanded),
+                    onToggle: () =>
+                        setState(() => article.expanded = !article.expanded),
                   );
                 }),
                 const SizedBox(height: 24),
