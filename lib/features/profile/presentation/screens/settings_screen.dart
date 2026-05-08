@@ -6,8 +6,15 @@ import 'package:crypto_pulse/core/theme/app_radius.dart';
 import 'package:crypto_pulse/core/theme/app_spacing.dart';
 import 'package:crypto_pulse/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:crypto_pulse/features/market/presentation/controllers/market_controller.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/connected_accounts_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/data_source_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/delete_account_screen.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/notifications_settings_screen.dart';
 import 'package:crypto_pulse/features/profile/presentation/screens/documentation_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/feedback_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/language_region_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/market_preferences_screen.dart';
+import 'package:crypto_pulse/features/profile/presentation/screens/security_settings_screen.dart';
 import 'package:crypto_pulse/features/market/presentation/widgets/notifications_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -33,9 +40,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _push(Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => screen),
-    );
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
   @override
@@ -90,7 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.yellow,
                   title: 'Security',
                   subtitle: 'Password and authentication',
-                  onTap: () => _showComingSoon(context, 'Security'),
+                  onTap: () => _push(const SecuritySettingsScreen()),
                 ),
                 _DividerLine(),
                 _RowTile(
@@ -98,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.deepPurple,
                   title: 'Connected Accounts',
                   subtitle: 'Linked wallets and exchanges',
-                  onTap: () => _showComingSoon(context, 'Connected Accounts'),
+                  onTap: () => _push(const ConnectedAccountsScreen()),
                 ),
               ],
             ).animate().fadeIn(duration: 400.ms, delay: 50.ms),
@@ -136,7 +141,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: LucideIcons.refreshCw,
                   iconColor: AppColors.mint,
                   title: 'Live Data Refresh',
-                  subtitle: _liveRefresh ? 'Auto-refresh every 30s' : 'Manual refresh only',
+                  subtitle: _liveRefresh
+                      ? 'Auto-refresh every 30s'
+                      : 'Manual refresh only',
                   value: _liveRefresh,
                   onChanged: (v) async {
                     setState(() => _liveRefresh = v);
@@ -152,7 +159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.onSurfaceVariant,
                   title: 'Language & Region',
                   subtitle: 'English (US) · USD',
-                  onTap: () => _showComingSoon(context, 'Language & Region'),
+                  onTap: () => _push(const LanguageRegionScreen()),
                 ),
               ],
             ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
@@ -169,7 +176,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.vibrantCoral,
                   title: 'Default Currency',
                   subtitle: 'USD – US Dollar',
-                  onTap: () => _showComingSoon(context, 'Default Currency'),
+                  onTap: () => _push(
+                    const MarketPreferencesScreen(
+                      initialMode: MarketPreferencesMode.currency,
+                    ),
+                  ),
                 ),
                 _DividerLine(),
                 _RowTile(
@@ -177,7 +188,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.yellow,
                   title: 'Chart Interval',
                   subtitle: '1 Day (1D) default',
-                  onTap: () => _showComingSoon(context, 'Chart Interval'),
+                  onTap: () => _push(
+                    const MarketPreferencesScreen(
+                      initialMode: MarketPreferencesMode.chartInterval,
+                    ),
+                  ),
                 ),
                 _DividerLine(),
                 _RowTile(
@@ -185,10 +200,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.cyanHighlight,
                   title: 'Data Source',
                   subtitle: 'Binance Public API',
-                  onTap: () => _showComingSoon(context, 'Data Source'),
+                  onTap: () => _push(const DataSourceScreen()),
                   showArrow: false,
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.mint.withValues(alpha: 0.2),
                       borderRadius: AppRadius.fullRadius,
@@ -226,7 +244,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: AppColors.deepPurple,
                   title: 'Send Feedback',
                   subtitle: 'Help us improve Crypto Pulse',
-                  onTap: () => _showComingSoon(context, 'Send Feedback'),
+                  onTap: () => _push(const FeedbackScreen()),
                 ),
                 _DividerLine(),
                 _RowTile(
@@ -274,27 +292,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     iconColor: AppColors.vibrantCoral,
                     title: 'Delete Account',
                     subtitle: 'Permanently remove your data',
-                    onTap: () => _showComingSoon(context, 'Delete Account'),
+                    onTap: () => _push(const DeleteAccountScreen()),
                   ),
                 ],
               ],
             ).animate().fadeIn(duration: 400.ms, delay: 250.ms),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.canvasLevel1,
-        content: Text(
-          '$feature — coming soon!',
-          style: const TextStyle(color: AppColors.onSurface),
-        ),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -307,7 +311,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lgRadius),
         title: const Text(
           'Crypto Pulse',
-          style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -327,7 +334,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: AppColors.vibrantCoral)),
+            child: const Text(
+              'Close',
+              style: TextStyle(color: AppColors.vibrantCoral),
+            ),
           ),
         ],
       ),
@@ -342,7 +352,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lgRadius),
         title: const Text(
           'Sign Out?',
-          style: TextStyle(color: AppColors.onSurface, fontWeight: FontWeight.w800),
+          style: TextStyle(
+            color: AppColors.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         content: Text(
           'You will need to sign in again to access your watchlist and settings.',
@@ -351,7 +364,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.onSurfaceVariant)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.onSurfaceVariant),
+            ),
           ),
           TextButton(
             onPressed: () async {
@@ -360,7 +376,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
             child: const Text(
               'Sign Out',
-              style: TextStyle(color: AppColors.vibrantCoral, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: AppColors.vibrantCoral,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -645,7 +664,7 @@ class _RowTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
             if (showArrow && trailing == null)
               Icon(
                 LucideIcons.chevronRight,
