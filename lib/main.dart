@@ -12,30 +12,35 @@ void main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: binding);
 
-  assert(
-    Env.supabaseAnonKey.isNotEmpty,
-    'SUPABASE_ANON_KEY not set — run with: flutter run --dart-define-from-file=.env.json',
-  );
+  try {
+    assert(
+      Env.supabaseAnonKey.isNotEmpty,
+      'SUPABASE_ANON_KEY not set — run with: flutter run --dart-define-from-file=.env.json',
+    );
 
-  late SharedPreferences sharedPreferences;
-  await Future.wait([
-    Supabase.initialize(
-      url: Env.supabaseUrl,
-      anonKey: Env.supabaseAnonKey,
-    ),
-    SharedPreferences.getInstance().then((prefs) => sharedPreferences = prefs),
-  ]);
+    late SharedPreferences sharedPreferences;
+    await Future.wait([
+      Supabase.initialize(
+        url: Env.supabaseUrl,
+        anonKey: Env.supabaseAnonKey,
+      ),
+      SharedPreferences.getInstance().then((prefs) => sharedPreferences = prefs),
+    ]);
 
-  FlutterNativeSplash.remove();
+    FlutterNativeSplash.remove();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const CryptoPulseApp(),
-    ),
-  );
+    runApp(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        ],
+        child: const CryptoPulseApp(),
+      ),
+    );
+  } catch (e) {
+    FlutterNativeSplash.remove();
+    rethrow;
+  }
 }
 
 class CryptoPulseApp extends ConsumerWidget {
