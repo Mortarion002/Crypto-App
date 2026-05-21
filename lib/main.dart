@@ -17,12 +17,14 @@ void main() async {
     'SUPABASE_ANON_KEY not set — run with: flutter run --dart-define-from-file=.env.json',
   );
 
-  await Supabase.initialize(
-    url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey,
-  );
-
-  final sharedPreferences = await SharedPreferences.getInstance();
+  late SharedPreferences sharedPreferences;
+  await Future.wait([
+    Supabase.initialize(
+      url: Env.supabaseUrl,
+      anonKey: Env.supabaseAnonKey,
+    ),
+    SharedPreferences.getInstance().then((prefs) => sharedPreferences = prefs),
+  ]);
 
   FlutterNativeSplash.remove();
 

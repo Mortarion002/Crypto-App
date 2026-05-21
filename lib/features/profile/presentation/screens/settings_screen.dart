@@ -306,7 +306,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showAbout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.canvasLevel1,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lgRadius),
         title: const Text(
@@ -333,7 +333,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text(
               'Close',
               style: TextStyle(color: AppColors.vibrantCoral),
@@ -347,7 +347,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _confirmSignOut(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.canvasLevel1,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.lgRadius),
         title: const Text(
@@ -363,7 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancel',
               style: TextStyle(color: AppColors.onSurfaceVariant),
@@ -371,7 +371,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               await ref.read(authControllerProvider.notifier).signOut();
             },
             child: const Text(
